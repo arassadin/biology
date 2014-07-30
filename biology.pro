@@ -14,9 +14,15 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainWindow.cpp \
-    data.cpp
+    data.cpp \
+    math/ols_polynom.cpp \
+    math/ols_sin.cpp \
+    math/processing.cpp
 
 HEADERS  += mainWindow.h \
-    data.h
+    data.h \
+    math/ols_polynom.h \
+    math/ols_sin.h \
+    math/processing.h
 
 FORMS    += mainWindow.ui

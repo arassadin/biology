@@ -6,28 +6,99 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>660</width>
+    <height>371</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Biology</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QPushButton" name="startButton">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
+   <widget class="QWidget" name="horizontalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>140</x>
-      <y>110</y>
-      <width>109</width>
-      <height>27</height>
+      <x>10</x>
+      <y>0</y>
+      <width>641</width>
+      <height>41</height>
      </rect>
     </property>
-    <property name="text">
-     <string>Start</string>
+    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0,0,0">
+     <item>
+      <spacer name="horizontalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>85</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="startButton">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Start</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="nextButton">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string>next</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QTableView" name="tableView">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>41</y>
+      <width>660</width>
+      <height>330</height>
+     </rect>
+    </property>
+    <property name="showGrid">
+     <bool>true</bool>
     </property>
    </widget>
   </widget>
@@ -36,7 +107,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>400</width>
+     <width>660</width>
      <height>25</height>
     </rect>
    </property>
@@ -48,7 +119,6 @@
    </widget>
    <addaction name="menuBar_File"/>
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
   <action name="menuBar_action_OpenData">
    <property name="text">
     <string>Open Data</string>
