@@ -6,6 +6,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     timeCounts=0;
     ui->tableView->setVisible(false);
     actualStep=1;
+    errorMessageBox=new QMessageBox("An error occured", "Error", QMessageBox::Critical, QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
 }
 
 MainWindow::~MainWindow()
@@ -39,7 +40,7 @@ Data *MainWindow::readData(QString fileName)
     tmpData->setSize(fieldsCount);
     if(!tmpData->allocate())
     {
-        qDebug() << "error1!";
+        errorMessageBox->setText("Can't allocate memory!");
         return (Data*)0;
     }
     for(int i=0; i<fieldsCount; i++)
@@ -48,7 +49,7 @@ Data *MainWindow::readData(QString fileName)
         QStringList tmpStrList=tmpStr.split(" ");
         if(tmpStrList.count()>2)
         {
-            qDebug() << "error2!" << " " << i+1;
+            errorMessageBox->setText("Bad data file!");
             return (Data*)0;
         }
         else
@@ -135,8 +136,7 @@ void MainWindow::on_menuBar_action_OpenData_triggered()
         Data* tmp=readData(dataList.at(i));
         if(tmp==(Data*)0)
         {
-            qDebug() << "big error1";
-            tables.clear();
+            revertAll();
             return;
         }
         tables.append(tmp);
@@ -155,7 +155,9 @@ void MainWindow::on_nextButton_pressed()
     switch (actualStep)
     {
     case 1:
-        qDebug() << "Next Button: " << "Error! Step " << actualStep << " is wrong!";
+        errorMessageBox->setText("Unpredicated behavior!");
+        errorMessageBox->show();
+        revertAll();
         return;
 
     case 2:
@@ -175,8 +177,8 @@ void MainWindow::on_nextButton_pressed()
         {
             Koefs* tmpKoefs=new Koefs();
             tmpKoefs->setType(POLYNOM_1);
-            tmpKoefs->a=ols_polynom_1->getSolve(tables.at(i)->getX(), tables.at(i)->getY(), tables.at(i)->getSize());
-            qDebug() << tmpKoefs->a[0] << tmpKoefs->a[1];
+            tmpKoefs->setA(ols_polynom_1->getSolve(tables.at(i)->getX(), tables.at(i)->getY(), tables.at(i)->getSize()));
+            qDebug() << tmpKoefs->getA(0) << tmpKoefs->getA(1);
             step2Koefs.append(tmpKoefs);
         }
         delete ols_polynom_1;
@@ -191,8 +193,8 @@ void MainWindow::on_nextButton_pressed()
         {
             Koefs* tmpKoefs=new Koefs();
             tmpKoefs->setType(POLYNOM_2);
-            tmpKoefs->a=ols_polynom_2->getSolve(tables.at(i)->getX(), tables.at(i)->getY(), tables.at(i)->getSize());
-            qDebug() << tmpKoefs->a[0] << tmpKoefs->a[1] << tmpKoefs->a[2];
+            tmpKoefs->setA(ols_polynom_2->getSolve(tables.at(i)->getX(), tables.at(i)->getY(), tables.at(i)->getSize()));
+            qDebug() << tmpKoefs->getA(0) << tmpKoefs->getA(1) << tmpKoefs->getA(2);
             step2Koefs.append(tmpKoefs);
         }
         delete ols_polynom_2;
@@ -207,8 +209,8 @@ void MainWindow::on_nextButton_pressed()
         {
             Koefs* tmpKoefs=new Koefs();
             tmpKoefs->setType(POLYNOM_3);
-            tmpKoefs->a=ols_polynom_3->getSolve(tables.at(i)->getX(), tables.at(i)->getY(), tables.at(i)->getSize());
-            qDebug() << tmpKoefs->a[0] << tmpKoefs->a[1] << tmpKoefs->a[2] << tmpKoefs->a[3];
+            tmpKoefs->setA(ols_polynom_3->getSolve(tables.at(i)->getX(), tables.at(i)->getY(), tables.at(i)->getSize()));
+            qDebug() << tmpKoefs->getA(0) << tmpKoefs->getA(1) << tmpKoefs->getA(2) << tmpKoefs->getA(3);
             step2Koefs.append(tmpKoefs);
         }
         delete ols_polynom_3;
@@ -269,7 +271,6 @@ void MainWindow::on_nextButton_pressed()
 
         actualStep++;
         return;
-
 //    case 3:
 
 //        qDebug() << "Next Button: " << "error! step " << actualStep << " is wrong";
@@ -286,7 +287,19 @@ void MainWindow::on_cancelButton_pressed()
     revertAll();
 }
 
-void MainWindow::on_actionTest_triggered()
+void MainWindow::keyPressEvent(QKeyEvent* ke)
 {
+    switch (ke->key())
+    {
+    case Qt::Key_T:
+        if(ke->modifiers() & (Qt::MetaModifier | Qt::ControlModifier))
+            testFunction();
+        break;
+    }
+}
 
+void MainWindow::testFunction()
+{
+    errorMessageBox->setText("ПроверкаПроверкаПроверка");
+    errorMessageBox->show();
 }

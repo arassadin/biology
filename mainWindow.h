@@ -13,6 +13,7 @@
 #include<QMessageBox>
 #include<QStandardItem>
 #include<QStandardItemModel>
+#include<QKeyEvent>
 #include"defines/data.h"
 #include"defines/koefs.h"
 #include"math/processing.h"
@@ -32,6 +33,7 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = 0);
+    virtual void keyPressEvent(QKeyEvent* ke);
     ~MainWindow();
 
 private slots:
@@ -39,7 +41,6 @@ private slots:
     void on_menuBar_action_OpenData_triggered();
     void on_nextButton_pressed();
     void on_cancelButton_pressed();
-    void on_actionTest_triggered();
 
 private:
     Ui::MainWindow *ui;
@@ -49,10 +50,12 @@ private:
     int timeCounts;
     QStringList dataList;
     int actualStep;
+    QMessageBox* errorMessageBox;
 
 private:
     Data* readData(QString fileName);
     void revertAll();
+    void testFunction();
 };
 
 #endif // MAINWINDOW_H

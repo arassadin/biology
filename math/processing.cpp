@@ -61,7 +61,7 @@ void mathStep_2(Data *table, Koefs* koefs)
         {
             double tmp(0.0);
             for(int k=0; k<=3; k++)
-                tmp+=koefs->a[k]*pow(table->getX(i), k);
+                tmp+=koefs->getA(k)*pow(table->getX(i), k);
             table->setYAppr(i, tmp);
         }
         break;
@@ -71,7 +71,7 @@ void mathStep_2(Data *table, Koefs* koefs)
         {
             double tmp(0.0);
             for(int k=0; k<=2; k++)
-                tmp+=koefs->a[k]*pow(table->getX(i), k);
+                tmp+=koefs->getA(k)*pow(table->getX(i), k);
             table->setYAppr(i, tmp);
         }
         break;
@@ -81,7 +81,7 @@ void mathStep_2(Data *table, Koefs* koefs)
         {
             double tmp(0.0);
             for(int k=0; k<=1; k++)
-                tmp+=koefs->a[k]*pow(table->getX(i), k);
+                tmp+=koefs->getA(k)*pow(table->getX(i), k);
             table->setYAppr(i, tmp);
         }
         break;

@@ -29,3 +29,13 @@ functionType Koefs::getType()
 {
     return type;
 }
+
+void Koefs::setA(double* _a)
+{
+    a=_a;
+}
+
+double Koefs::getA(int element)
+{
+    return a[element];
+}
