@@ -14,20 +14,20 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainWindow.cpp \
-    data.cpp \
+    defines/data.cpp \
     math/ols_polynom.cpp \
     math/ols_sin.cpp \
     math/processing.cpp \
-    koefs.cpp \
+    defines/koefs.cpp \
     math/mainElementMethod.cpp
 
 HEADERS  += mainWindow.h \
-    data.h \
+    defines/data.h \
     math/ols_polynom.h \
     math/ols_sin.h \
     math/processing.h \
-    koefs.h \
-    defines.h \
+    defines/koefs.h \
+    defines/defines.h \
     math/mainElementMethod.h
 
 FORMS    += mainWindow.ui

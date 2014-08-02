@@ -13,11 +13,11 @@
 #include<QMessageBox>
 #include<QStandardItem>
 #include<QStandardItemModel>
-#include"data.h"
-#include"koefs.h"
+#include"defines/data.h"
+#include"defines/koefs.h"
 #include"math/processing.h"
 #include"math/ols_polynom.h"
-#include"defines.h"
+#include"defines/defines.h"
 
 #include "ui_mainWindow.h"
 

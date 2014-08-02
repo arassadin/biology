@@ -3,8 +3,8 @@
 
 #include<qmath.h>
 
-#include"data.h"
-#include"koefs.h"
+#include"defines/data.h"
+#include"defines/koefs.h"
 
 void mathStep_1(Data* table);
 void mathStep_2(Data* table, Koefs* koefs);

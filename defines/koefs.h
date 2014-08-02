@@ -1,7 +1,7 @@
 #ifndef KOEFS_H
 #define KOEFS_H
 
-#include"defines.h"
+#include"defines/defines.h"
 
 class Koefs
 {
