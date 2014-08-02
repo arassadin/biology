@@ -30,7 +30,7 @@
         <bool>false</bool>
        </property>
        <property name="text">
-        <string>Cancel</string>
+        <string>End</string>
        </property>
       </widget>
      </item>

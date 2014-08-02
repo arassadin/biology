@@ -57,7 +57,6 @@ void mathStep_2(Data *table, Koefs* koefs)
     switch (koefs->getType())
     {
     case POLYNOM_3:
-        qDebug() << "mathStep_2";
         for(int i=0; i<table->getSize(); i++)
         {
             double tmp(0.0);

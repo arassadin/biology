@@ -2,6 +2,8 @@
 #include<QDebug>
 #include"qmath.h"
 
+#include"mainElementMethod.h"
+
 class OLS_polynom
 {
 public:
@@ -10,16 +12,15 @@ public:
     ~OLS_polynom();
     
 private:
-    void diagonalChecking();
     void allocateMatrixes();
     void fillMatrixes();
-    void freeMatrix();
+    void freeMatrixes();
     
 private:
     int size;
     int degree;
     double* solve;
-    double* constant_terms;
+    double** constant_terms;
     double** sums;
    	double* x;
     double* y;

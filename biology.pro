@@ -18,7 +18,8 @@ SOURCES += main.cpp\
     math/ols_polynom.cpp \
     math/ols_sin.cpp \
     math/processing.cpp \
-    koefs.cpp
+    koefs.cpp \
+    math/mainElementMethod.cpp
 
 HEADERS  += mainWindow.h \
     data.h \
@@ -26,6 +27,7 @@ HEADERS  += mainWindow.h \
     math/ols_sin.h \
     math/processing.h \
     koefs.h \
-    defines.h
+    defines.h \
+    math/mainElementMethod.h
 
 FORMS    += mainWindow.ui

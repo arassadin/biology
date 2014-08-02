@@ -140,9 +140,10 @@ void MainWindow::on_menuBar_action_OpenData_triggered()
             return;
         }
         tables.append(tmp);
-        qDebug() << tables.at(i)->getX(0) << "_" << tables.at(i)->getY(0);
     }
 /* end of uploading */
+
+    timeCounts=tables.count();
 
     ui->startButton->setEnabled(true);
     ui->tableView->setVisible(true);
@@ -154,8 +155,8 @@ void MainWindow::on_nextButton_pressed()
     switch (actualStep)
     {
     case 1:
-        qDebug() << "Next Button: " << "error! step " << actualStep << " is wrong";
-        break;
+        qDebug() << "Next Button: " << "Error! Step " << actualStep << " is wrong!";
+        return;
 
     case 2:
         ui->tableView->model()->removeRows(0, tables.count());
@@ -164,6 +165,10 @@ void MainWindow::on_nextButton_pressed()
         if(step2Koefs.count()>0)
             step2Koefs.clear();
 
+//        QFile mathLog("/home/alexandr/Desktop/log5");
+//        mathLog.open(QIODevice::WriteOnly);
+//        QTextStream* logStream=new QTextStream(&mathLog);
+
 /* OLS for polynom, degree 1 */
         OLS_polynom* ols_polynom_1=new OLS_polynom(1);
         for(int i=0; i<tables.count(); i++)
@@ -171,11 +176,14 @@ void MainWindow::on_nextButton_pressed()
             Koefs* tmpKoefs=new Koefs();
             tmpKoefs->setType(POLYNOM_1);
             tmpKoefs->a=ols_polynom_1->getSolve(tables.at(i)->getX(), tables.at(i)->getY(), tables.at(i)->getSize());
-            qDebug() << tmpKoefs->a[0] << tmpKoefs->a[2] << tmpKoefs->a[2] << tmpKoefs->a[3];
+            qDebug() << tmpKoefs->a[0] << tmpKoefs->a[1];
             step2Koefs.append(tmpKoefs);
         }
         delete ols_polynom_1;
 /* end of OLS for polynom */
+//        *logStream << "p_1: \n";
+//        for(int i=timeCounts*0; i<timeCounts*1; i++)
+//            *logStream << step2Koefs.at(i)->a[0] << " " << step2Koefs.at(i)->a[1] << "\n";
 
 /* OLS for polynom, degree 2 */
         OLS_polynom* ols_polynom_2=new OLS_polynom(2);
@@ -184,11 +192,14 @@ void MainWindow::on_nextButton_pressed()
             Koefs* tmpKoefs=new Koefs();
             tmpKoefs->setType(POLYNOM_2);
             tmpKoefs->a=ols_polynom_2->getSolve(tables.at(i)->getX(), tables.at(i)->getY(), tables.at(i)->getSize());
-            qDebug() << tmpKoefs->a[0] << tmpKoefs->a[2] << tmpKoefs->a[2] << tmpKoefs->a[3];
+            qDebug() << tmpKoefs->a[0] << tmpKoefs->a[1] << tmpKoefs->a[2];
             step2Koefs.append(tmpKoefs);
         }
         delete ols_polynom_2;
 /* end of OLS for polynom */
+//        *logStream << "p_2: \n";
+//        for(int i=timeCounts*1; i<timeCounts*2; i++)
+//            *logStream << step2Koefs.at(i)->a[0] << " " << step2Koefs.at(i)->a[1] << " " << step2Koefs.at(i)->a[2]<< "\n";
 
 /* OLS for polynom, degree 3 */
         OLS_polynom* ols_polynom_3=new OLS_polynom(3);
@@ -197,13 +208,20 @@ void MainWindow::on_nextButton_pressed()
             Koefs* tmpKoefs=new Koefs();
             tmpKoefs->setType(POLYNOM_3);
             tmpKoefs->a=ols_polynom_3->getSolve(tables.at(i)->getX(), tables.at(i)->getY(), tables.at(i)->getSize());
-            qDebug() << tmpKoefs->a[0] << tmpKoefs->a[2] << tmpKoefs->a[2] << tmpKoefs->a[3];
+            qDebug() << tmpKoefs->a[0] << tmpKoefs->a[1] << tmpKoefs->a[2] << tmpKoefs->a[3];
             step2Koefs.append(tmpKoefs);
         }
         delete ols_polynom_3;
 /* end of OLS for polynom */
+//        *logStream << "p_3: \n";
+//        for(int i=timeCounts*2; i<timeCounts*3; i++)
+//            *logStream << step2Koefs.at(i)->a[0] << " " << step2Koefs.at(i)->a[1] << " " << step2Koefs.at(i)->a[2] << " " << step2Koefs.at(i)->a[3] << "\n";
 
-        for(int j=0; j<3; j++)
+//        mathLog.flush();
+//        mathLog.close();
+//        delete logStream;
+
+        for(int j=0; j<FIRST_OLS_FUNC_Q; j++)
         {
             int mp=0;
             for(int i=0; i<tables.count(); i++)
@@ -232,9 +250,34 @@ void MainWindow::on_nextButton_pressed()
         ui->tableView->resizeColumnsToContents();
 /* end of the filling */
 
-        actualStep++;
-        break;
+        while(step2Koefs.count()>tables.count())
+        {
+            double tmpAv1(0.0), tmpAv2(0.0);
+            for(int i=0; i<timeCounts; i++)
+                tmpAv1+=step2Koefs.at(i)->getR2();
+            tmpAv1/=timeCounts;
+            for(int i=timeCounts; i<timeCounts*2; i++)
+                tmpAv2+=step2Koefs.at(i)->getR2();
+            tmpAv2/=timeCounts;
+            if(tmpAv1>tmpAv2)
+                for(int i=0; i<timeCounts; i++)
+                    step2Koefs.removeAt(timeCounts);
+            else
+                for(int i=0; i<timeCounts; i++)
+                    step2Koefs.removeAt(0);
+        }
 
+        actualStep++;
+        return;
+
+//    case 3:
+
+//        qDebug() << "Next Button: " << "error! step " << actualStep << " is wrong";
+//        return;
+
+//    default:
+//        qDebug() << "Next Button: " << "error! step " << actualStep << " is wrong";
+//        return;
     }
 }
 
