@@ -5,12 +5,26 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->setupUi(this);
     timeCounts=0;
     ui->tableView->setVisible(false);
-    actualStep=0;
+    actualStep=1;
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::revertAll()
+{
+    timeCounts=0;
+    actualStep=1;
+    tables.clear();
+    step2Koefs.clear();
+
+    ui->tableView->setVisible(false);
+    ui->startButton->setEnabled(false);
+    ui->nextButton->setEnabled(false);
+    ui->cancelButton->setEnabled(false);
+    ui->menuBar_action_OpenData->setEnabled(true);
 }
 
 Data *MainWindow::readData(QString fileName)
@@ -49,9 +63,72 @@ Data *MainWindow::readData(QString fileName)
 
 void MainWindow::on_startButton_pressed()
 {
+    for(int i=0; i<dataList.count(); i++)
+    {
+        mathStep_1(tables.at(i));
+    }
+
+/* filling the table */
+    QStandardItemModel* model=new QStandardItemModel();
+
+    QStringList horHeader;
+    horHeader.append("x' +- dx");
+    horHeader.append("y' +- dy");
+    horHeader.append("Cs(x)");
+    horHeader.append("Cs(y)");
+
+    QStringList vertHeader;
+    for(int i=0; i<tables.count(); i++)
+    {
+        vertHeader.append("time #");
+    }
+
+    model->setHorizontalHeaderLabels(horHeader);
+    model->setVerticalHeaderLabels(vertHeader);
+
+    for(int i=0; i<tables.count(); i++)
+    {
+        QStandardItem *tmpItem=new QStandardItem();
+        QString tmpStr="";
+        //tmpStr+=tables.at(i)->getArithemeticMean_x();
+        tmpStr+=" +- ";
+        //tmpStr+=tables.at(i)->getConfidenceInterval_x();
+        tmpStr.operator +=(1.0);
+        tmpItem->setText(tmpStr);
+        model->setItem(i, 0, tmpItem);
+    }
+
+    ui->tableView->setModel(model);
+
+//    int tmpHeight=ui->tableView->horizontalHeader()->height();
+//    ui->tableView->setRowHeight(0, (ui->tableView->height()-tmpHeight)/3-1);
+//    ui->tableView->setRowHeight(1, (ui->tableView->height()-tmpHeight)/3);
+//    ui->tableView->setRowHeight(2, (ui->tableView->height()-tmpHeight)/3);
+
+//    int tmpWidth=ui->tableView->verticalHeader()->width();
+//    ui->tableView->setColumnWidth(0, (ui->tableView->width()-tmpWidth)/2-1);
+//    ui->tableView->setColumnWidth(1, (ui->tableView->width()-tmpWidth)/2);
+
+    ui->tableView->setVisible(true);
+/* end of filling */
+
+    ui->menuBar_action_OpenData->setEnabled(false);
+    ui->startButton->setEnabled(false);
+    actualStep++;
+    ui->nextButton->setEnabled(true);
+}
+
+void MainWindow::on_menuBar_action_OpenData_triggered()
+{
+    QFileDialog openDataFiles;
+    dataList.clear();
+    dataList=openDataFiles.getOpenFileNames(0, "Open Data Files", "/home/alexandr/develop/c++/biology", "*");
+    qDebug() << "count: " << dataList.count();
+
     if(tables.count()>0)
         tables.clear();
 
+/* start uploding data files */
     for(int i=0; i<dataList.count(); i++)
     {
         qDebug() << dataList.at(i) << ":";
@@ -65,79 +142,108 @@ void MainWindow::on_startButton_pressed()
         tables.append(tmp);
         qDebug() << tables.at(i)->getX(0) << "_" << tables.at(i)->getY(0);
     }
+/* end of uploading */
 
-    for(int i=0; i<dataList.count(); i++)
-    {
-        math_step_1(tables.at(i));
-    }
-
-    qDebug() << "this";
-    tables.clear();
-}
-
-void MainWindow::on_menuBar_action_OpenData_triggered()
-{
-    QFileDialog openDataFiles;
-    dataList.clear();
-    dataList=openDataFiles.getOpenFileNames(0, "Open Data Files", "/home/alexandr/develop/c++/biology", "*");
-    qDebug() << "count: " << dataList.count();
     ui->startButton->setEnabled(true);
     ui->tableView->setVisible(true);
+    ui->cancelButton->setEnabled(true);
 }
 
 void MainWindow::on_nextButton_pressed()
 {
-//    QGraphicsView *g=(QGraphicsView*)qpd;
-//    g->setWindowTitle("Graphic #1");
-//    g->setFixedSize(600, 300);
+    switch (actualStep)
+    {
+    case 1:
+        qDebug() << "Next Button: " << "error! step " << actualStep << " is wrong";
+        break;
 
-//    plot2d* plot=new plot2d();
+    case 2:
+        ui->tableView->model()->removeRows(0, tables.count());
+        ui->tableView->model()->removeColumns(0, 4);
 
-//    QPainter graphPainter;
-//    graphPainter.begin();
+        if(step2Koefs.count()>0)
+            step2Koefs.clear();
 
-//    QPoint* line=new QPoint[8];
-//    for(int i=0; i<8; i++)
-//        line[i]=QPoint(i+1, i+1);
-//    graphPainter.drawPolyline(line, 8);
+/* OLS for polynom, degree 1 */
+        OLS_polynom* ols_polynom_1=new OLS_polynom(1);
+        for(int i=0; i<tables.count(); i++)
+        {
+            Koefs* tmpKoefs=new Koefs();
+            tmpKoefs->setType(POLYNOM_1);
+            tmpKoefs->a=ols_polynom_1->getSolve(tables.at(i)->getX(), tables.at(i)->getY(), tables.at(i)->getSize());
+            qDebug() << tmpKoefs->a[0] << tmpKoefs->a[2] << tmpKoefs->a[2] << tmpKoefs->a[3];
+            step2Koefs.append(tmpKoefs);
+        }
+        delete ols_polynom_1;
+/* end of OLS for polynom */
 
-//    graphPainter.end();
+/* OLS for polynom, degree 2 */
+        OLS_polynom* ols_polynom_2=new OLS_polynom(2);
+        for(int i=0; i<tables.count(); i++)
+        {
+            Koefs* tmpKoefs=new Koefs();
+            tmpKoefs->setType(POLYNOM_2);
+            tmpKoefs->a=ols_polynom_2->getSolve(tables.at(i)->getX(), tables.at(i)->getY(), tables.at(i)->getSize());
+            qDebug() << tmpKoefs->a[0] << tmpKoefs->a[2] << tmpKoefs->a[2] << tmpKoefs->a[3];
+            step2Koefs.append(tmpKoefs);
+        }
+        delete ols_polynom_2;
+/* end of OLS for polynom */
 
-//    g->show();
+/* OLS for polynom, degree 3 */
+        OLS_polynom* ols_polynom_3=new OLS_polynom(3);
+        for(int i=0; i<tables.count(); i++)
+        {
+            Koefs* tmpKoefs=new Koefs();
+            tmpKoefs->setType(POLYNOM_3);
+            tmpKoefs->a=ols_polynom_3->getSolve(tables.at(i)->getX(), tables.at(i)->getY(), tables.at(i)->getSize());
+            qDebug() << tmpKoefs->a[0] << tmpKoefs->a[2] << tmpKoefs->a[2] << tmpKoefs->a[3];
+            step2Koefs.append(tmpKoefs);
+        }
+        delete ols_polynom_3;
+/* end of OLS for polynom */
 
-//    plot->show();
+        for(int j=0; j<3; j++)
+        {
+            int mp=0;
+            for(int i=0; i<tables.count(); i++)
+                mathStep_2(tables.at(i), step2Koefs.at(mp+i));
+            mp+=3;
+        }
 
-//    QWidget *graph=new QWidget();
-//    graph->setWindowTitle("Graphic #1");
-//    graph->setFixedSize(600, 300);
+/* filling the table */
+        QStandardItemModel* model=new QStandardItemModel();
 
-    //graph->show();
+        QStringList horHeader;
+        horHeader.append("R^2");
+        horHeader.append("Оценка");
 
-    QStandardItemModel* model=new QStandardItemModel();
-    QStandardItem* tmpItem=new QStandardItem();
+        QStringList vertHeader;
+//        for(int i=0; i<tables.count(); i++)
+//        {
+            vertHeader.append("Полиномиальная (степень 3)");
+//        }
 
-    QStringList horHeader;
-    horHeader.append("X");
-    horHeader.append("Y");
+        model->setHorizontalHeaderLabels(horHeader);
+        model->setVerticalHeaderLabels(vertHeader);
 
-    QStringList vertHeader;
-    vertHeader.append("time #1");
-    vertHeader.append("time #2");
-    vertHeader.append("time #3");
+        ui->tableView->setModel(model);
+        ui->tableView->resizeRowsToContents();
+        ui->tableView->resizeColumnsToContents();
+/* end of the filling */
 
-    model->setHorizontalHeaderLabels(horHeader);
-    model->setVerticalHeaderLabels(vertHeader);
+        actualStep++;
+        break;
 
-    //tmpItem->setText();
+    }
+}
 
-    ui->tableView->setModel(model);
+void MainWindow::on_cancelButton_pressed()
+{
+    revertAll();
+}
 
-    int tmpHeight=ui->tableView->horizontalHeader()->height();
-    ui->tableView->setRowHeight(0, (ui->tableView->height()-tmpHeight)/3-1);
-    ui->tableView->setRowHeight(1, (ui->tableView->height()-tmpHeight)/3);
-    ui->tableView->setRowHeight(2, (ui->tableView->height()-tmpHeight)/3);
+void MainWindow::on_actionTest_triggered()
+{
 
-    int tmpWidth=ui->tableView->verticalHeader()->width();
-    ui->tableView->setColumnWidth(0, (ui->tableView->width()-tmpWidth)/2-1);
-    ui->tableView->setColumnWidth(1, (ui->tableView->width()-tmpWidth)/2);
 }

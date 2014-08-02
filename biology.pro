@@ -17,12 +17,15 @@ SOURCES += main.cpp\
     data.cpp \
     math/ols_polynom.cpp \
     math/ols_sin.cpp \
-    math/processing.cpp
+    math/processing.cpp \
+    koefs.cpp
 
 HEADERS  += mainWindow.h \
     data.h \
     math/ols_polynom.h \
     math/ols_sin.h \
-    math/processing.h
+    math/processing.h \
+    koefs.h \
+    defines.h
 
 FORMS    += mainWindow.ui

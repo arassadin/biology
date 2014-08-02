@@ -5,6 +5,11 @@ OLS_polynom::OLS_polynom(int _degree)
 	degree=_degree;
 }
 
+OLS_polynom::~OLS_polynom()
+{
+
+}
+
 void OLS_polynom::freeMatrix()
 {
    int i;

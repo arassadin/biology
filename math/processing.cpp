@@ -1,6 +1,6 @@
 #include"processing.h"
 
-void math_step_1(Data *table)
+void mathStep_1(Data *table)
 {
     double tmp(0.0);
 
@@ -41,10 +41,64 @@ void math_step_1(Data *table)
     tmp=1.0*table->getStandartDeviationOfArithmeticMean_y();
     table->setConfidenceInterval_y(tmp);
 
-    tmp=table->getStandartDeviationOfArithmeticMean_x()/1.0*100.0;
+    tmp=table->getStandartDeviationOfArithmeticMean_x()/table->getArithemeticMean_x()*100.0;
     table->setAccurance_x(tmp);
-    tmp=table->getStandartDeviationOfArithmeticMean_y()/1.0*100.0;
+    tmp=table->getStandartDeviationOfArithmeticMean_y()/table->getArithemeticMean_y()*100.0;
     table->setAccurance_y(tmp);
+
+    qDebug() << table->getArithemeticMean_x() << table->getStandartDeviation_x() << table->getStandartDeviationOfArithmeticMean_x() \
+                << table->getConfidenceInterval_x() << table->getAccurance_x();
+    qDebug() << table->getArithemeticMean_y() << table->getStandartDeviation_y() << table->getStandartDeviationOfArithmeticMean_y() \
+                << table->getConfidenceInterval_y() << table->getAccurance_y();
 }
 
+void mathStep_2(Data *table, Koefs* koefs)
+{
+    switch (koefs->getType())
+    {
+    case POLYNOM_3:
+        qDebug() << "mathStep_2";
+        for(int i=0; i<table->getSize(); i++)
+        {
+            double tmp(0.0);
+            for(int k=0; k<=3; k++)
+                tmp+=koefs->a[k]*pow(table->getX(i), k);
+            table->setYAppr(i, tmp);
+        }
+        break;
+
+    case POLYNOM_2:
+        for(int i=0; i<table->getSize(); i++)
+        {
+            double tmp(0.0);
+            for(int k=0; k<=2; k++)
+                tmp+=koefs->a[k]*pow(table->getX(i), k);
+            table->setYAppr(i, tmp);
+        }
+        break;
+
+    case POLYNOM_1:
+        for(int i=0; i<table->getSize(); i++)
+        {
+            double tmp(0.0);
+            for(int k=0; k<=1; k++)
+                tmp+=koefs->a[k]*pow(table->getX(i), k);
+            table->setYAppr(i, tmp);
+        }
+        break;
+
+    default:
+        break;
+    }
+
+    double tmp1(0.0), tmp2(0.0);
+    for(int i=0; i<table->getSize(); i++)
+    {
+        tmp1+=pow(table->getY(i)-table->getYAppr(i), 2.0);
+        tmp2+=pow(table->getY(i)-table->getArithemeticMean_y(), 2.0);
+    }
+    koefs->setR2(tmp1/tmp2);
+
+    qDebug() << "R^2: " << koefs->getR2();
+}
 

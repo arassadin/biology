@@ -25,20 +25,14 @@
     </property>
     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0,0,0">
      <item>
-      <spacer name="horizontalSpacer_3">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+      <widget class="QPushButton" name="cancelButton">
+       <property name="enabled">
+        <bool>false</bool>
        </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Fixed</enum>
+       <property name="text">
+        <string>Cancel</string>
        </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>85</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
+      </widget>
      </item>
      <item>
       <spacer name="horizontalSpacer">
@@ -79,7 +73,7 @@
      <item>
       <widget class="QPushButton" name="nextButton">
        <property name="enabled">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
        <property name="text">
         <string>next</string>
@@ -122,6 +116,11 @@
   <action name="menuBar_action_OpenData">
    <property name="text">
     <string>Open Data</string>
+   </property>
+  </action>
+  <action name="actionTest">
+   <property name="text">
+    <string>test</string>
    </property>
   </action>
  </widget>

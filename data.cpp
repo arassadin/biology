@@ -31,8 +31,9 @@ bool Data::allocate()
         return false;
     x=new double[size];
     y=new double[size];
-    qDebug() << x << "_" << y;
-    if(x!=0 && y!=0)
+    yAppr=new double[size];
+    qDebug() << x << "_" << y << "_" << yAppr;
+    if(x!=0 && y!=0 && yAppr!=0)
         return true;
     return false;
 }
@@ -47,6 +48,11 @@ void Data::setY(int element, double value)
     y[element]=value;
 }
 
+void Data::setYAppr(int element, double value)
+{
+    yAppr[element]=value;
+}
+
 double Data::getX(int element)
 {
     return x[element];
@@ -55,6 +61,26 @@ double Data::getX(int element)
 double Data::getY(int element)
 {
     return y[element];
+}
+
+double Data::getYAppr(int element)
+{
+    return yAppr[element];
+}
+
+double* Data::getX()
+{
+    return x;
+}
+
+double* Data::getY()
+{
+    return y;
+}
+
+double* Data::getYAppr()
+{
+    return yAppr;
 }
 
 double Data::getAccurance_x()
