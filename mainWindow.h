@@ -33,7 +33,6 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = 0);
-    virtual void keyPressEvent(QKeyEvent* ke);
     ~MainWindow();
 
 private slots:
@@ -56,6 +55,7 @@ private:
     Data* readData(QString fileName);
     void revertAll();
     void testFunction();
+    virtual void keyPressEvent(QKeyEvent* ke);
 };
 
 #endif // MAINWINDOW_H

@@ -79,9 +79,10 @@ void MainWindow::on_startButton_pressed()
     horHeader.append("Cs(y)");
 
     QStringList vertHeader;
-    for(int i=0; i<tables.count(); i++)
+    for(int i=0; i<timeCounts; i++)
     {
-        vertHeader.append("time #");
+        QString tmpStr="time #"+QString::number(i+1);
+        vertHeader.append(tmpStr);
     }
 
     model->setHorizontalHeaderLabels(horHeader);
@@ -91,15 +92,36 @@ void MainWindow::on_startButton_pressed()
     {
         QStandardItem *tmpItem=new QStandardItem();
         QString tmpStr="";
-        //tmpStr+=tables.at(i)->getArithemeticMean_x();
+        tmpStr+=QString::number(tables.at(i)->getArithemeticMean_x());
         tmpStr+=" +- ";
-        //tmpStr+=tables.at(i)->getConfidenceInterval_x();
-        tmpStr.operator +=(1.0);
+        tmpStr+=QString::number(tables.at(i)->getConfidenceInterval_x());
         tmpItem->setText(tmpStr);
         model->setItem(i, 0, tmpItem);
+
+        tmpItem=new QStandardItem();
+        tmpStr="";
+        tmpStr+=QString::number(tables.at(i)->getArithemeticMean_y());
+        tmpStr+=" +- ";
+        tmpStr+=QString::number(tables.at(i)->getConfidenceInterval_y());
+        tmpItem->setText(tmpStr);
+        model->setItem(i, 1, tmpItem);
+
+        tmpItem=new QStandardItem();
+        tmpStr="";
+        tmpStr+=QString::number(tables.at(i)->getAccurance_x());
+        tmpItem->setText(tmpStr);
+        model->setItem(i, 2, tmpItem);
+
+        tmpItem=new QStandardItem();
+        tmpStr="";
+        tmpStr+=QString::number(tables.at(i)->getAccurance_y());
+        tmpItem->setText(tmpStr);
+        model->setItem(i, 3, tmpItem);
     }
 
     ui->tableView->setModel(model);
+    ui->tableView->resizeRowsToContents();
+    ui->tableView->resizeColumnsToContents();
 
 //    int tmpHeight=ui->tableView->horizontalHeader()->height();
 //    ui->tableView->setRowHeight(0, (ui->tableView->height()-tmpHeight)/3-1);
@@ -161,6 +183,7 @@ void MainWindow::on_nextButton_pressed()
         return;
 
     case 2:
+    {
         ui->tableView->model()->removeRows(0, tables.count());
         ui->tableView->model()->removeColumns(0, 4);
 
@@ -271,14 +294,14 @@ void MainWindow::on_nextButton_pressed()
 
         actualStep++;
         return;
-//    case 3:
+    }
+    case 3:
+        qDebug() << "Next Button: " << "error! step " << actualStep << " is wrong";
+        return;
 
-//        qDebug() << "Next Button: " << "error! step " << actualStep << " is wrong";
-//        return;
-
-//    default:
-//        qDebug() << "Next Button: " << "error! step " << actualStep << " is wrong";
-//        return;
+    default:
+        qDebug() << "Next Button: " << "error! step " << actualStep << " is wrong";
+        return;
     }
 }
 
