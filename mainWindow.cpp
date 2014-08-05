@@ -73,8 +73,8 @@ void MainWindow::on_startButton_pressed()
     QStandardItemModel* model=new QStandardItemModel();
 
     QStringList horHeader;
-    horHeader.append("x' +- dx");
-    horHeader.append("y' +- dy");
+    horHeader.append("x' +/- dx");
+    horHeader.append("y' +/- dy");
     horHeader.append("Cs(x)");
     horHeader.append("Cs(y)");
 
@@ -93,7 +93,7 @@ void MainWindow::on_startButton_pressed()
         QStandardItem *tmpItem=new QStandardItem();
         QString tmpStr="";
         tmpStr+=QString::number(tables.at(i)->getArithemeticMean_x());
-        tmpStr+=" +- ";
+        tmpStr+=" +/- ";
         tmpStr+=QString::number(tables.at(i)->getConfidenceInterval_x());
         tmpItem->setText(tmpStr);
         model->setItem(i, 0, tmpItem);
@@ -101,7 +101,7 @@ void MainWindow::on_startButton_pressed()
         tmpItem=new QStandardItem();
         tmpStr="";
         tmpStr+=QString::number(tables.at(i)->getArithemeticMean_y());
-        tmpStr+=" +- ";
+        tmpStr+=" +/- ";
         tmpStr+=QString::number(tables.at(i)->getConfidenceInterval_y());
         tmpItem->setText(tmpStr);
         model->setItem(i, 1, tmpItem);
@@ -312,15 +312,33 @@ void MainWindow::on_nextButton_pressed()
             infMessageBox->setText("Каак?Каааак?");
             break;
         }
-        infMessageBox->show();
+        while(infMessageBox->exec()==QDialog::Accepted)
+            ;
 
         QVector<Plot2D*> plots;
         for(int i=0; i<timeCounts; i++)
         {
             Plot2D* tmpPlot=new Plot2D();
+            QString tmpTitle="time #"+QString::number(i+1);
+            tmpPlot->setWindowTitle(tmpTitle);
             plots.append(tmpPlot);
             plots.at(i)->getPlotWidget()->addGraph();
-            plots.at(i)->getPlotWidget()->graph(0)->setData(tables.at(i)->getX(), tables.at(i)->getY(), tables.at(i)->getSize());
+            plots.at(i)->getPlotWidget()->graph(0)->setData(tables.at(i)->getX(), tables.at(i)->getYAppr(), tables.at(i)->getSize());
+            plots.at(i)->getPlotWidget()->addGraph();
+            plots.at(i)->getPlotWidget()->graph(1)->setData(tables.at(i)->getX(), tables.at(i)->getY(), tables.at(i)->getSize());
+            QCPScatterStyle tmpStyle;
+            tmpStyle.setShape(QCPScatterStyle::ssCross);
+            QCPGraph::LineStyle dotLineStyle=QCPGraph::lsNone;
+            plots.at(i)->getPlotWidget()->graph(1)->setScatterStyle(tmpStyle);
+            plots.at(i)->getPlotWidget()->graph(1)->setLineStyle(dotLineStyle);
+            plots.at(i)->getPlotWidget()->xAxis->setLabel("x");
+            plots.at(i)->getPlotWidget()->yAxis->setLabel("y");
+            double tmpStep(0.0);
+            tmpStep=abs(tables.at(i)->getX(tables.at(i)->getSize()-1)-tables.at(i)->getX(0))/(double)tables.at(i)->getSize();
+            plots.at(i)->getPlotWidget()->xAxis->setRange(tables.at(i)->getX(0)-tmpStep*2.0, tables.at(i)->getX(tables.at(i)->getSize()-1)+tmpStep*2.0);
+            tmpStep=abs(tables.at(i)->getYAppr(tables.at(i)->getSize()-1)-tables.at(i)->getYAppr(0))/(double)tables.at(i)->getSize();
+            plots.at(i)->getPlotWidget()->yAxis->setRange(tables.at(i)->getYAppr(0)-tmpStep*2.0, tables.at(i)->getYAppr(tables.at(i)->getSize()-1)+tmpStep*2.0);
+
             plots.at(i)->getPlotWidget()->replot();
         }
         for(int i=0; i<timeCounts; i++)
