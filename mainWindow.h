@@ -14,6 +14,7 @@
 #include<QStandardItem>
 #include<QStandardItemModel>
 #include<QKeyEvent>
+#include<QPainter>
 #include"defines/data.h"
 #include"defines/koefs.h"
 #include"math/processing.h"

@@ -326,10 +326,9 @@ void MainWindow::on_nextButton_pressed()
             plots.at(i)->getPlotWidget()->graph(0)->setData(tables.at(i)->getX(), tables.at(i)->getYAppr(), tables.at(i)->getSize());
             plots.at(i)->getPlotWidget()->addGraph();
             plots.at(i)->getPlotWidget()->graph(1)->setData(tables.at(i)->getX(), tables.at(i)->getY(), tables.at(i)->getSize());
-            QCPScatterStyle tmpStyle;
-            tmpStyle.setShape(QCPScatterStyle::ssCross);
-            QCPGraph::LineStyle dotLineStyle=QCPGraph::lsNone;
+            QCPScatterStyle tmpStyle(QCPScatterStyle::ssCross, Qt::red, 6.0);
             plots.at(i)->getPlotWidget()->graph(1)->setScatterStyle(tmpStyle);
+            QCPGraph::LineStyle dotLineStyle=QCPGraph::lsNone;
             plots.at(i)->getPlotWidget()->graph(1)->setLineStyle(dotLineStyle);
             plots.at(i)->getPlotWidget()->xAxis->setLabel("x");
             plots.at(i)->getPlotWidget()->yAxis->setLabel("y");
