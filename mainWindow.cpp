@@ -319,18 +319,8 @@ void MainWindow::on_nextButton_pressed()
         {
             Plot2D* tmpPlot=new Plot2D();
             plots.append(tmpPlot);
-            QVector<double> tmpVectorX;
-            for(int j=0; j<tables.at(0)->getSize(); j++)
-            {
-                tmpVectorX.append(tables.at(i)->getX(j));
-            }
-            QVector<double> tmpVectorY;
-            for(int j=0; j<tables.at(0)->getSize(); j++)
-            {
-                tmpVectorY.append(tables.at(i)->getY(j));
-            }
             plots.at(i)->getPlotWidget()->addGraph();
-            plots.at(i)->getPlotWidget()->graph(0)->setData(tmpVectorX, tmpVectorY);
+            plots.at(i)->getPlotWidget()->graph(0)->setData(tables.at(i)->getX(), tables.at(i)->getY(), tables.at(i)->getSize());
             plots.at(i)->getPlotWidget()->replot();
         }
         for(int i=0; i<timeCounts; i++)

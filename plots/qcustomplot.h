@@ -2518,6 +2518,7 @@ public:
   // setters:
   void setData(QCPDataMap *data, bool copy=false);
   void setData(const QVector<double> &key, const QVector<double> &value);
+  void setData(double* x, double* y, int size);
   void setDataKeyError(const QVector<double> &key, const QVector<double> &value, const QVector<double> &keyError);
   void setDataKeyError(const QVector<double> &key, const QVector<double> &value, const QVector<double> &keyErrorMinus, const QVector<double> &keyErrorPlus);
   void setDataValueError(const QVector<double> &key, const QVector<double> &value, const QVector<double> &valueError);

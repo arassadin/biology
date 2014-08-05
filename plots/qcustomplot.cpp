@@ -14563,6 +14563,23 @@ void QCPGraph::setData(const QVector<double> &key, const QVector<double> &value)
   }
 }
 
+/* \overload
+ *
+ * My modification
+ *
+ */
+void QCPGraph::setData(double* x, double* y, int size)
+{
+  mData->clear();
+  QCPData newData;
+  for (int i=0; i<size; ++i)
+  {
+    newData.key = x[i];
+    newData.value = y[i];
+    mData->insertMulti(newData.key, newData);
+  }
+}
+
 /*!
   Replaces the current data with the provided points in \a key and \a value pairs. Additionally the
   symmetrical value error of the data points are set to the values in \a valueError.
