@@ -275,6 +275,11 @@ void MainWindow::on_nextButton_pressed()
         ui->tableView->resizeColumnsToContents();
 /* end of the filling */
 
+        actualStep++;
+        return;
+    }
+    case 3:
+    {
         while(step2Koefs.count()>tables.count())
         {
             double tmpAv1(0.0), tmpAv2(0.0);
@@ -291,14 +296,51 @@ void MainWindow::on_nextButton_pressed()
                 for(int i=0; i<timeCounts; i++)
                     step2Koefs.removeAt(0);
         }
+        QMessageBox* infMessageBox=new QMessageBox("Вид итоговой функции", "", QMessageBox::Information, QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
+        switch (step2Koefs.at(0)->getType())
+        {
+        case POLYNOM_1:
+            infMessageBox->setText("Выбрана полиномиальная функция 1ой степени");
+            break;
+        case POLYNOM_2:
+            infMessageBox->setText("Выбрана полиномиальная функция 2ой степени");
+            break;
+        case POLYNOM_3:
+            infMessageBox->setText("Выбрана полиномиальная функция 3ой степени");
+            break;
+        default:
+            infMessageBox->setText("Каак?Каааак?");
+            break;
+        }
+        infMessageBox->show();
+
+        QVector<Plot2D*> plots;
+        for(int i=0; i<timeCounts; i++)
+        {
+            Plot2D* tmpPlot=new Plot2D();
+            plots.append(tmpPlot);
+            QVector<double> tmpVectorX;
+            for(int j=0; j<tables.at(0)->getSize(); j++)
+            {
+                tmpVectorX.append(tables.at(i)->getX(j));
+            }
+            QVector<double> tmpVectorY;
+            for(int j=0; j<tables.at(0)->getSize(); j++)
+            {
+                tmpVectorY.append(tables.at(i)->getY(j));
+            }
+            plots.at(i)->getPlotWidget()->addGraph();
+            plots.at(i)->getPlotWidget()->graph(0)->setData(tmpVectorX, tmpVectorY);
+            plots.at(i)->getPlotWidget()->replot();
+        }
+        for(int i=0; i<timeCounts; i++)
+            plots.at(i)->show();
+
+        ui->tableView->setVisible(false);
 
         actualStep++;
         return;
     }
-    case 3:
-        qDebug() << "Next Button: " << "error! step " << actualStep << " is wrong";
-        return;
-
     default:
         qDebug() << "Next Button: " << "error! step " << actualStep << " is wrong";
         return;
@@ -323,6 +365,6 @@ void MainWindow::keyPressEvent(QKeyEvent* ke)
 
 void MainWindow::testFunction()
 {
-    errorMessageBox->setText("ПроверкаПроверкаПроверка");
-    errorMessageBox->show();
+    Plot2D* testPlot=new Plot2D();
+    testPlot->show();
 }

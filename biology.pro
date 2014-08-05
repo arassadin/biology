@@ -4,13 +4,12 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui printsupport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = biology
 TEMPLATE = app
-
 
 SOURCES += main.cpp\
         mainWindow.cpp \
@@ -19,7 +18,9 @@ SOURCES += main.cpp\
     math/ols_sin.cpp \
     math/processing.cpp \
     defines/koefs.cpp \
-    math/mainElementMethod.cpp
+    math/mainElementMethod.cpp \
+    plots/qcustomplot.cpp \
+    plots/plot2d.cpp
 
 HEADERS  += mainWindow.h \
     defines/data.h \
@@ -28,6 +29,9 @@ HEADERS  += mainWindow.h \
     math/processing.h \
     defines/koefs.h \
     defines/defines.h \
-    math/mainElementMethod.h
+    math/mainElementMethod.h \
+    plots/qcustomplot.h \
+    plots/plot2d.h
 
-FORMS    += mainWindow.ui
+FORMS    += mainWindow.ui \
+    plots/plot2d.ui

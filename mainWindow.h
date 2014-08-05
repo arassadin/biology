@@ -19,6 +19,8 @@
 #include"math/processing.h"
 #include"math/ols_polynom.h"
 #include"defines/defines.h"
+#include"plots/plot2d.h"
+#include"plots/qcustomplot.h"
 
 #include "ui_mainWindow.h"
 
