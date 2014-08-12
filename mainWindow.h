@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #define FIRST_OLS_FUNC_Q 3
-#define SECOND_OLS_FUNC_Q 1
+#define SECOND_OLS_FUNC_Q 2
 
 #include<QMainWindow>
 #include<QFileDialog>
@@ -19,6 +19,8 @@
 #include"defines/koefs.h"
 #include"math/processing.h"
 #include"math/ols_polynom.h"
+#include"math/ols_sin.h"
+#include"math/ols_cos.h"
 #include"defines/defines.h"
 #include"plots/plot2d.h"
 #include"plots/qcustomplot.h"
@@ -48,7 +50,7 @@ private:
     Ui::MainWindow *ui;
     QVector<Data*> tables;
     QVector<Koefs*> step2Koefs;
-//    QVector<Koefs*> koefsStep3;
+    QVector<Koefs*> step4Koefs;
     int timeCounts;
     QStringList dataList;
     int actualStep;

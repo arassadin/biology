@@ -13,6 +13,8 @@ Data::~Data()
         delete[] x;
     if(y!=0)
         delete[] y;
+    if(yAppr!=0)
+        delete[] yAppr;
 }
 
 void Data::setSize(int _size)

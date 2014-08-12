@@ -14,11 +14,14 @@ public:
     double getR2();
     void setType(functionType _type);
     functionType getType();
-    double getA(int element);
-    void setA(double* _a);
+    double getKoef(int element);
+    void setKoefs(double* _koefs);
+    void setAppr(int element, double value);
+    double getAppr(int element);
 
 private:
-    double* a;
+    double* koefs;
+    double* appr;
     double R2;
     functionType type;
 };

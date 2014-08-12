@@ -9,7 +9,9 @@ enum functionType
     SIN_1,
     SIN_2,
     COS_1,
-    COS_2
+    COS_2,
+    tmp_SIN,
+    tmp_COS
 };
 
 #endif // DEFINES_H

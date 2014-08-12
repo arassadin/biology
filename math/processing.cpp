@@ -61,7 +61,7 @@ void mathStep_2(Data *table, Koefs* koefs)
         {
             double tmp(0.0);
             for(int k=0; k<=3; k++)
-                tmp+=koefs->getA(k)*pow(table->getX(i), k);
+                tmp+=koefs->getKoef(k)*pow(table->getX(i), k);
             table->setYAppr(i, tmp);
         }
         break;
@@ -71,7 +71,7 @@ void mathStep_2(Data *table, Koefs* koefs)
         {
             double tmp(0.0);
             for(int k=0; k<=2; k++)
-                tmp+=koefs->getA(k)*pow(table->getX(i), k);
+                tmp+=koefs->getKoef(k)*pow(table->getX(i), k);
             table->setYAppr(i, tmp);
         }
         break;
@@ -81,7 +81,7 @@ void mathStep_2(Data *table, Koefs* koefs)
         {
             double tmp(0.0);
             for(int k=0; k<=1; k++)
-                tmp+=koefs->getA(k)*pow(table->getX(i), k);
+                tmp+=koefs->getKoef(k)*pow(table->getX(i), k);
             table->setYAppr(i, tmp);
         }
         break;
@@ -98,6 +98,45 @@ void mathStep_2(Data *table, Koefs* koefs)
     }
     koefs->setR2(tmp1/tmp2);
 
-    qDebug() << "R^2: " << koefs->getR2();
+    qDebug() << "R^2 step2: " << koefs->getR2();
+}
+
+void mathStep_4(double* t, double* a, Koefs* koefs, int count)
+{
+    switch (koefs->getType())
+    {
+    case tmp_SIN:
+        for(int i=0; i<count; i++)
+        {
+            double tmp=koefs->getKoef(0)+koefs->getKoef(1)*sin(t[i]);
+            koefs->setAppr(i, tmp);
+        }
+        break;
+
+    case tmp_COS:
+        for(int i=0; i<count; i++)
+        {
+            double tmp=koefs->getKoef(0)+koefs->getKoef(1)*cos(t[i]);
+            koefs->setAppr(i, tmp);
+        }
+        break;
+
+    default:
+        break;
+    }
+
+    double arithemeticMean_a(0);
+    for(int i=0; i<count; i++)
+        arithemeticMean_a+=a[i]/count;
+
+    double tmp1(0.0), tmp2(0.0);
+    for(int i=0; i<count; i++)
+    {
+        tmp1+=pow(a[i]-koefs->getAppr(i), 2.0);
+        tmp2+=pow(a[i]-arithemeticMean_a, 2.0);
+    }
+    koefs->setR2(tmp1/tmp2);
+
+    qDebug() << "R^2 step4: " << koefs->getR2();
 }
 

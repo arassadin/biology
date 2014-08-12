@@ -20,7 +20,8 @@ SOURCES += main.cpp\
     defines/koefs.cpp \
     math/mainElementMethod.cpp \
     plots/qcustomplot.cpp \
-    plots/plot2d.cpp
+    plots/plot2d.cpp \
+    math/ols_cos.cpp
 
 HEADERS  += mainWindow.h \
     defines/data.h \
@@ -31,7 +32,8 @@ HEADERS  += mainWindow.h \
     defines/defines.h \
     math/mainElementMethod.h \
     plots/qcustomplot.h \
-    plots/plot2d.h
+    plots/plot2d.h \
+    math/ols_cos.h
 
 FORMS    += mainWindow.ui \
     plots/plot2d.ui

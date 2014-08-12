@@ -2,12 +2,14 @@
 
 Koefs::Koefs()
 {
+    appr=0;
     R2=0.0;
 }
 
 Koefs::~Koefs()
 {
-    delete[] a;
+    delete[] koefs;
+    delete[] appr;
 }
 
 void Koefs::setR2(double _R2)
@@ -30,12 +32,35 @@ functionType Koefs::getType()
     return type;
 }
 
-void Koefs::setA(double* _a)
+void Koefs::setKoefs(double* _koefs)
 {
-    a=_a;
+    koefs=_koefs;
 }
 
-double Koefs::getA(int element)
+double Koefs::getKoef(int element)
 {
-    return a[element];
+    return koefs[element];
+}
+
+void Koefs::setAppr(int element, double value)
+{
+    if(appr==0)
+        switch (type)
+        {
+        case tmp_SIN:
+            appr=new double[2];
+            break;
+
+        case tmp_COS:
+            appr=new double[2];
+
+        default:
+            return;
+        }
+    appr[element]=value;
+}
+
+double Koefs::getAppr(int element)
+{
+    return appr[element];
 }
