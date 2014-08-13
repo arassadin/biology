@@ -50,12 +50,11 @@ void Koefs::setAppr(int element, double value)
         case tmp_SIN:
             appr=new double[2];
             break;
-
         case tmp_COS:
             appr=new double[2];
-
+            break;
         default:
-            return;
+            break;
         }
     appr[element]=value;
 }

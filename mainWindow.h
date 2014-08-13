@@ -48,13 +48,15 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+    double* t;
     QVector<Data*> tables;
     QVector<Koefs*> step2Koefs;
     QVector<Koefs*> step4Koefs;
-    int timeCounts;
+    int timesCount;
     QStringList dataList;
     int actualStep;
     QMessageBox* errorMessageBox;
+    QVector<double*> appr;
 
 private:
     Data* readData(QString fileName);

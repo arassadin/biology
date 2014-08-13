@@ -14,4 +14,15 @@ enum functionType
     tmp_COS
 };
 
+static struct f_type
+{
+    f_type(int count, functionType _type)
+    {
+        type=_type;
+        koefQ=count;
+    }
+    functionType type;
+    int koefQ;
+} polynom_1(1, POLYNOM_1), polynom_2(2, POLYNOM_2), polynom_3(3, POLYNOM_3), tmp_sin(2, tmp_SIN), tmp_cos(2, tmp_COS);
+
 #endif // DEFINES_H

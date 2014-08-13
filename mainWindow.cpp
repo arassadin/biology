@@ -3,7 +3,8 @@
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    timeCounts=0;
+    timesCount=0;
+    t=0;
     ui->tableView->setVisible(false);
     actualStep=1;
     errorMessageBox=new QMessageBox("An error occured", "Error", QMessageBox::Critical, QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
@@ -11,16 +12,20 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
 MainWindow::~MainWindow()
 {
+    if(t!=0)
+        delete[] t;
     delete ui;
 }
 
 void MainWindow::revertAll()
 {
-    timeCounts=0;
+    delete[] t; t=0;
+    timesCount=0;
     actualStep=1;
     tables.clear();
     step2Koefs.clear();
     step4Koefs.clear();
+    appr.clear();
 
     ui->tableView->setVisible(false);
     ui->startButton->setEnabled(false);
@@ -34,10 +39,13 @@ Data *MainWindow::readData(QString fileName)
     QFile f;
     f.setFileName(fileName);
     f.open(QIODevice::ReadOnly);
-    QString tmpStr=f.readLine();
-    int fieldsCount=tmpStr.toInt();
-    qDebug() << fieldsCount;
     Data* tmpData=new Data();
+    QString tmpStr=f.readLine();
+    QStringList tmpList=tmpStr.split('=');
+    tmpData->setT(tmpList.at(1).toDouble());
+    tmpStr=f.readLine();
+    int fieldsCount=tmpStr.toInt();
+//    qDebug() << fieldsCount;
     tmpData->setSize(fieldsCount);
     if(!tmpData->allocate())
     {
@@ -57,10 +65,44 @@ Data *MainWindow::readData(QString fileName)
         {
             tmpData->setX(i, tmpStrList.at(0).toDouble());
             tmpData->setY(i, tmpStrList.at(1).toDouble());
-            qDebug() << tmpData->getX(i) << " " << tmpData->getY(i);
+//            qDebug() << tmpData->getX(i) << " " << tmpData->getY(i);
         }
     }
     return tmpData;
+}
+
+void MainWindow::on_menuBar_action_OpenData_triggered()
+{
+    QFileDialog openDataFiles;
+    dataList.clear();
+    dataList=openDataFiles.getOpenFileNames(0, "Open Data Files", "/home/alexandr/develop/c++/biology", "*");
+    qDebug() << "count: " << dataList.count();
+
+    if(tables.count()>0)
+        tables.clear();
+
+/* start uploding data files */
+    for(int i=0; i<dataList.count(); i++)
+    {
+//        qDebug() << dataList.at(i) << ":";
+        Data* tmp=readData(dataList.at(i));
+        if(tmp==(Data*)0)
+        {
+            revertAll();
+            return;
+        }
+        tables.append(tmp);
+    }
+/* end of uploading */
+
+    t=new double[tables.count()];
+    for(int i=0; i<tables.count(); i++)
+        t[i]=tables.at(i)->getT();
+    timesCount=tables.count();
+
+    ui->startButton->setEnabled(true);
+    ui->tableView->setVisible(true);
+    ui->cancelButton->setEnabled(true);
 }
 
 void MainWindow::on_startButton_pressed()
@@ -80,9 +122,9 @@ void MainWindow::on_startButton_pressed()
     horHeader.append("Cs(y)");
 
     QStringList vertHeader;
-    for(int i=0; i<timeCounts; i++)
+    for(int i=0; i<timesCount; i++)
     {
-        QString tmpStr="time #"+QString::number(i+1);
+        QString tmpStr="time "+QString::number(t[i])+"h";
         vertHeader.append(tmpStr);
     }
 
@@ -140,37 +182,6 @@ void MainWindow::on_startButton_pressed()
     ui->startButton->setEnabled(false);
     actualStep++;
     ui->nextButton->setEnabled(true);
-}
-
-void MainWindow::on_menuBar_action_OpenData_triggered()
-{
-    QFileDialog openDataFiles;
-    dataList.clear();
-    dataList=openDataFiles.getOpenFileNames(0, "Open Data Files", "/home/alexandr/develop/c++/biology", "*");
-    qDebug() << "count: " << dataList.count();
-
-    if(tables.count()>0)
-        tables.clear();
-
-/* start uploding data files */
-    for(int i=0; i<dataList.count(); i++)
-    {
-        qDebug() << dataList.at(i) << ":";
-        Data* tmp=readData(dataList.at(i));
-        if(tmp==(Data*)0)
-        {
-            revertAll();
-            return;
-        }
-        tables.append(tmp);
-    }
-/* end of uploading */
-
-    timeCounts=tables.count();
-
-    ui->startButton->setEnabled(true);
-    ui->tableView->setVisible(true);
-    ui->cancelButton->setEnabled(true);
 }
 
 void MainWindow::on_nextButton_pressed()
@@ -247,17 +258,11 @@ void MainWindow::on_nextButton_pressed()
 //        mathLog.close();
 //        delete logStream;
 
-//        for(int j=0; j<FIRST_OLS_FUNC_Q; j++)
-//        {
-//            int mp=0;
-//            for(int i=0; i<tables.count(); i++)
-//                mathStep_2(tables.at(i), step2Koefs.at(mp+i));
-//            mp+=timeCounts;
-//        }
-        for(int j=0; j<timeCounts*FIRST_OLS_FUNC_Q; j+=timeCounts)
+        appr.clear();
+        for(int j=0; j<timesCount*FIRST_OLS_FUNC_Q; j+=timesCount)
         {
-            for(int i=0; i<timeCounts; i++)
-                mathStep_2(tables.at(i), step2Koefs.at(j+i));
+            for(int i=0; i<timesCount; i++)
+                appr.append(mathStep_2(tables.at(i), step2Koefs.at(j+i)));
         }
 
 /* filling the table */
@@ -268,16 +273,16 @@ void MainWindow::on_nextButton_pressed()
         horHeader.append("Оценка");
 
         QStringList vertHeader;
-        for(int i=0; i<timeCounts; i++)
+        for(int i=0; i<timesCount; i++)
         {
-            vertHeader.append("time #"+QString::number(i+1));
+            vertHeader.append("time "+QString::number(t[i])+"h");
             vertHeader.append("Полиномиальная (степень 1)");
             vertHeader.append("Полиномиальная (степень 2)");
             vertHeader.append("Полиномиальная (степень 3)");
         }
 
         QList<QStandardItem*> column1, column2;
-        for(int i=0; i<timeCounts; i++)
+        for(int i=0; i<timesCount; i++)
         {
             QStandardItem *tmpItem=new QStandardItem("");
             column1.append(tmpItem);
@@ -286,7 +291,7 @@ void MainWindow::on_nextButton_pressed()
             {
                 QStandardItem *tmpItem1=new QStandardItem();
                 QStandardItem *tmpItem2;
-                double tmpR2=step2Koefs.at(timeCounts*j+i)->getR2();
+                double tmpR2=step2Koefs.at(timesCount*j+i)->getR2();
                 QString tmpStr=QString::number(tmpR2);
                 tmpItem1->setText(tmpStr);
                 column1.append(tmpItem1);
@@ -320,22 +325,32 @@ void MainWindow::on_nextButton_pressed()
     }
     case 3:
     {
-        while(step2Koefs.count()>tables.count())
+        while(step2Koefs.count()>timesCount)
         {
             double tmpAv1(0.0), tmpAv2(0.0);
-            for(int i=0; i<timeCounts; i++)
+            for(int i=0; i<timesCount; i++)
                 tmpAv1+=step2Koefs.at(i)->getR2();
-            tmpAv1/=timeCounts;
-            for(int i=timeCounts; i<timeCounts*2; i++)
+            tmpAv1/=(double)timesCount;
+            for(int i=timesCount; i<timesCount*2; i++)
                 tmpAv2+=step2Koefs.at(i)->getR2();
-            tmpAv2/=timeCounts;
+            tmpAv2/=timesCount;
             if(tmpAv1>tmpAv2)
-                for(int i=0; i<timeCounts; i++)
-                    step2Koefs.removeAt(timeCounts);
+                for(int i=0; i<timesCount; i++)
+                {
+                    step2Koefs.removeAt(timesCount);
+                    appr.removeAt(timesCount);
+                }
             else
-                for(int i=0; i<timeCounts; i++)
+                for(int i=0; i<timesCount; i++)
+                {
                     step2Koefs.removeAt(0);
+                    appr.removeAt(0);
+                }
         }
+        for(int i=0; i<timesCount; i++)
+            tables.at(i)->setYAppr(appr.at(i));
+        appr.clear();
+
         QMessageBox* infMessageBox=new QMessageBox("Вид итоговой функции", "", QMessageBox::Information, QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
         switch (step2Koefs.at(0)->getType())
         {
@@ -356,10 +371,10 @@ void MainWindow::on_nextButton_pressed()
             ;
 
         QVector<Plot2D*> plots;
-        for(int i=0; i<timeCounts; i++)
+        for(int i=0; i<timesCount; i++)
         {
             Plot2D* tmpPlot=new Plot2D();
-            QString tmpTitle="time #"+QString::number(i+1);
+            QString tmpTitle="time "+QString::number(t[i])+"h";
             tmpPlot->setWindowTitle(tmpTitle);
             plots.append(tmpPlot);
             plots.at(i)->getPlotWidget()->addGraph();
@@ -373,28 +388,27 @@ void MainWindow::on_nextButton_pressed()
             plots.at(i)->getPlotWidget()->xAxis->setLabel("x");
             plots.at(i)->getPlotWidget()->yAxis->setLabel("y");
             double tmpStep(0.0);
-            tmpStep=abs(tables.at(i)->getX(tables.at(i)->getSize()-1)-tables.at(i)->getX(0))/(double)tables.at(i)->getSize();
-            plots.at(i)->getPlotWidget()->xAxis->setRange(tables.at(i)->getX(0)-tmpStep*2.0, tables.at(i)->getX(tables.at(i)->getSize()-1)+tmpStep*2.0);
-            tmpStep=abs(tables.at(i)->getYAppr(tables.at(i)->getSize()-1)-tables.at(i)->getYAppr(0))/(double)tables.at(i)->getSize();
-            plots.at(i)->getPlotWidget()->yAxis->setRange(tables.at(i)->getYAppr(0)-tmpStep*2.0, tables.at(i)->getYAppr(tables.at(i)->getSize()-1)+tmpStep*2.0);
+            tmpStep=fabs(tables.at(i)->getX(tables.at(i)->getSize()-1)-tables.at(i)->getX(0))/(double)tables.at(i)->getSize();
+            plots.at(i)->getPlotWidget()->xAxis->setRange(tables.at(i)->getX(0)-tmpStep*1.0, tables.at(i)->getX(tables.at(i)->getSize()-1)+tmpStep*1.0);
+//            plots.at(i)->getPlotWidget()->xAxis->setRange(tables.at(i)->getX(0)-1, tables.at(i)->getX(tables.at(i)->getSize()-1)+1);
+            tmpStep=fabs(tables.at(i)->getYAppr(tables.at(i)->getSize()-1)-tables.at(i)->getYAppr(0))/(double)tables.at(i)->getSize();
+            plots.at(i)->getPlotWidget()->yAxis->setRange(tables.at(i)->getYAppr(0)-tmpStep*1.0, tables.at(i)->getYAppr(tables.at(i)->getSize()-1)+tmpStep*1.0);
+//            plots.at(i)->getPlotWidget()->yAxis->setRange(tables.at(i)->getYAppr(0)-1, tables.at(i)->getYAppr(tables.at(i)->getSize()-1)+1);
 
             plots.at(i)->getPlotWidget()->replot();
         }
-        for(int i=0; i<timeCounts; i++)
+        for(int i=0; i<timesCount; i++)
             plots.at(i)->show();
 
         ui->tableView->setVisible(false);
+//        ui->tableView->model()->removeRows(0, ui->tableView->model()->rowCount());
+//        ui->tableView->model()->removeColumns(0, ui->tableView->model()->columnCount());
 
         actualStep++;
         return;
     }
     case 4:
     {
-        ui->tableView->model()->removeRows(0, ui->tableView->model()->rowCount());
-        ui->tableView->model()->removeColumns(0, ui->tableView->model()->columnCount());
-
-        double* t=new double[4];
-        t[0]=18; t[1]=72; t[2]=168; t[3]=720;
         int koefQ(0);
         switch (step2Koefs.at(0)->getType())
         {
@@ -407,13 +421,15 @@ void MainWindow::on_nextButton_pressed()
         case POLYNOM_3:
             koefQ=4;
             break;
+        default:
+            break;
         }
 
         QVector<double*> aSelection;
         for(int i=0; i<koefQ; i++)
         {
-            double* tmpA=new double[timeCounts];
-            for(int j=0; j<timeCounts; j++)
+            double* tmpA=new double[timesCount];
+            for(int j=0; j<timesCount; j++)
                 tmpA[j]=step2Koefs.at(j)->getKoef(i);
             aSelection.append(tmpA);
         }
@@ -427,7 +443,7 @@ void MainWindow::on_nextButton_pressed()
             OLS_sin* ols_sin=new OLS_sin();
             Koefs* tmpKoefs=new Koefs();
             tmpKoefs->setType(tmp_SIN);
-            tmpKoefs->setKoefs(ols_sin->getSolve(t, aSelection.at(i), timeCounts));
+            tmpKoefs->setKoefs(ols_sin->getSolve(t, aSelection.at(i), timesCount));
             step4Koefs.append(tmpKoefs);
         }
 /* end of OLS for sin */
@@ -438,17 +454,16 @@ void MainWindow::on_nextButton_pressed()
             OLS_cos* ols_cos=new OLS_cos();
             Koefs* tmpKoefs=new Koefs();
             tmpKoefs->setType(tmp_COS);
-            tmpKoefs->setKoefs(ols_cos->getSolve(t, aSelection.at(i), timeCounts));
+            tmpKoefs->setKoefs(ols_cos->getSolve(t, aSelection.at(i), timesCount));
             step4Koefs.append(tmpKoefs);
         }
 /* end of OLS for cos */
 
-        for(int j=0; j<SECOND_OLS_FUNC_Q; j++)
+        appr.clear();
+        for(int j=0; j<koefQ*SECOND_OLS_FUNC_Q; j+=koefQ)
         {
-            int mp=0;
             for(int i=0; i<koefQ; i++)
-                mathStep_4(t, aSelection.at(i), step4Koefs.at(mp+i), timeCounts);
-            mp+=koefQ;
+                appr.append(mathStep_4(t, aSelection.at(i), step4Koefs.at(j+i), timesCount));
         }
         qDebug() << "this";
 
@@ -460,17 +475,47 @@ void MainWindow::on_nextButton_pressed()
         horHeader.append("Оценка");
 
         QStringList vertHeader;
-//        for(int i=0; i<tables.count(); i++)
-//        {
-            vertHeader.append("sin (tmp)");
-//        }
+        for(int i=0; i<2; i++)
+        {
+            vertHeader.append("a "+QString::number(i));
+            vertHeader.append("sin");
+            vertHeader.append("cos");
+        }
 
-        model->setHorizontalHeaderLabels(horHeader);
-        model->setVerticalHeaderLabels(vertHeader);
+        QList<QStandardItem*> column1, column2;
+        for(int i=0; i<2; i++)
+        {
+            QStandardItem *tmpItem=new QStandardItem("");
+            column1.append(tmpItem);
+            column2.append(tmpItem);
+            for(int j=0; j<SECOND_OLS_FUNC_Q; j++)
+            {
+                QStandardItem *tmpItem1=new QStandardItem();
+                QStandardItem *tmpItem2;
+                double tmpR2=step4Koefs.at(2*j+i)->getR2();
+                QString tmpStr=QString::number(tmpR2);
+                tmpItem1->setText(tmpStr);
+                column1.append(tmpItem1);
+
+                if(tmpR2>0.9 && tmpR2<=1.0)
+                    tmpItem2=new QStandardItem("очень высокая");
+                else if(tmpR2>0.7 && tmpR2<=0.9)
+                    tmpItem2=new QStandardItem("высокая");
+                else if(tmpR2>0.5 && tmpR2<=0.7)
+                    tmpItem2=new QStandardItem("заметная");
+                else if(tmpR2>0.0 && tmpR2<=0.5)
+                    tmpItem2=new QStandardItem("незначительная");
+                else
+                    tmpItem2=new QStandardItem("error!");
+                column2.append(tmpItem2);
+            }
+        }
+        model->appendColumn(column1);
+        model->appendColumn(column2);
 
         ui->tableView->setModel(model);
-        ui->tableView->resizeRowsToContents();
-        ui->tableView->resizeColumnsToContents();
+        model->setHorizontalHeaderLabels(horHeader);
+        model->setVerticalHeaderLabels(vertHeader);
 /* end of the filling */
 
         ui->tableView->setVisible(true);
@@ -479,11 +524,89 @@ void MainWindow::on_nextButton_pressed()
         return;
     }
     case 5:
+    {
+        while(step4Koefs.count()>2)
+        {
+            double tmpAv1(0.0), tmpAv2(0.0);
+            for(int i=0; i<2; i++)
+                tmpAv1+=step4Koefs.at(i)->getR2();
+            tmpAv1/=2.0;
+            for(int i=2; i<2*2; i++)
+                tmpAv2+=step4Koefs.at(i)->getR2();
+            tmpAv2/=2.0;
+            if(tmpAv1>tmpAv2)
+                for(int i=0; i<2; i++)
+                {
+                    step4Koefs.removeAt(2);
+                    appr.removeAt(2);
+                }
+            else
+                for(int i=0; i<2; i++)
+                {
+                    step4Koefs.removeAt(0);
+                    appr.removeAt(0);
+                }
+        }
+
+        QMessageBox* infMessageBox=new QMessageBox("Вид итоговой функции", "", QMessageBox::Information, QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
+        switch (step4Koefs.at(0)->getType())
+        {
+        case tmp_SIN:
+            infMessageBox->setText("Выбран sin");
+            break;
+        case tmp_COS:
+            infMessageBox->setText("Выбран cos");
+            break;
+        default:
+            infMessageBox->setText("Каак?Каааак?");
+            break;
+        }
+        while(infMessageBox->exec()==QDialog::Accepted)
+            ;
+
+        QVector<double*> aSelection;
+        for(int i=0; i<2; i++)
+        {
+            double* tmpA=new double[timesCount];
+            for(int j=0; j<timesCount; j++)
+                tmpA[j]=step2Koefs.at(j)->getKoef(i);
+            aSelection.append(tmpA);
+        }
+
+        QVector<Plot2D*> plots;
+        for(int i=0; i<2; i++)
+        {
+            Plot2D* tmpPlot=new Plot2D();
+            QString tmpTitle="a"+QString::number(i);
+            tmpPlot->setWindowTitle(tmpTitle);
+            plots.append(tmpPlot);
+            plots.at(i)->getPlotWidget()->addGraph();
+            plots.at(i)->getPlotWidget()->graph(0)->setData(t, appr.at(i), timesCount);
+            plots.at(i)->getPlotWidget()->addGraph();
+            plots.at(i)->getPlotWidget()->graph(1)->setData(t, aSelection.at(i), timesCount);
+            QCPScatterStyle tmpStyle(QCPScatterStyle::ssCross, Qt::red, 6.0);
+            plots.at(i)->getPlotWidget()->graph(1)->setScatterStyle(tmpStyle);
+            QCPGraph::LineStyle dotLineStyle=QCPGraph::lsNone;
+            plots.at(i)->getPlotWidget()->graph(1)->setLineStyle(dotLineStyle);
+            plots.at(i)->getPlotWidget()->xAxis->setLabel("t");
+            plots.at(i)->getPlotWidget()->yAxis->setLabel("a"+QString::number(i));
+            double tmpStep(0.0);
+            tmpStep=fabs(t[timesCount-1]-t[0])/(double)timesCount;
+            plots.at(i)->getPlotWidget()->xAxis->setRange(t[0]-tmpStep*1.0, t[timesCount-1]+tmpStep*1.0);
+            tmpStep=fabs(aSelection.at(i)[timesCount-1]-aSelection.at(i)[0])/(double)timesCount;
+            plots.at(i)->getPlotWidget()->yAxis->setRange(aSelection.at(i)[0]-tmpStep*1.0, aSelection.at(i)[timesCount-1]+tmpStep*1.0);
+
+            plots.at(i)->getPlotWidget()->replot();
+        }
+        for(int i=0; i<2; i++)
+            plots.at(i)->show();
+
         ui->tableView->setVisible(false);
 
+        ui->nextButton->setEnabled(false);
         actualStep++;
         return;
-
+    }
     default:
         qDebug() << "Next Button: " << "error! step " << actualStep << " is wrong";
         return;

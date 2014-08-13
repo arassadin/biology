@@ -2,6 +2,7 @@
 #define DATA_H
 
 #include<QDebug>
+#include<QVector>
 
 class Data
 {
@@ -14,6 +15,7 @@ private:
     double* y;
     double* yAppr;
     int size;
+    double t;
     double arithemeticMean_x;
     double arithemeticMean_y;
     double standartDeviation_x;
@@ -31,7 +33,7 @@ public:
     bool allocate();
     void setX(int element, double value);
     void setY(int element, double value);
-    void setYAppr(int element, double value);
+    void setYAppr(double* value);
     double getX(int element);
     double getY(int element);
     double getYAppr(int element);
@@ -58,6 +60,8 @@ public:
     void setConfidenceInterval_y(double value);
     void setAccurance_x(double value);
     void setAccurance_y(double value);
+    double getT();
+    void setT(double value);
 };
 
 #endif // DATA_H

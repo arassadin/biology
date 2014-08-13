@@ -17,6 +17,16 @@ Data::~Data()
         delete[] yAppr;
 }
 
+double Data::getT()
+{
+    return t;
+}
+
+void Data::setT(double value)
+{
+    t = value;
+}
+
 void Data::setSize(int _size)
 {
     size=_size;
@@ -50,9 +60,9 @@ void Data::setY(int element, double value)
     y[element]=value;
 }
 
-void Data::setYAppr(int element, double value)
+void Data::setYAppr(double *value)
 {
-    yAppr[element]=value;
+    yAppr=value;
 }
 
 double Data::getX(int element)
