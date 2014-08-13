@@ -75,7 +75,7 @@ void MainWindow::on_menuBar_action_OpenData_triggered()
 {
     QFileDialog openDataFiles;
     dataList.clear();
-    dataList=openDataFiles.getOpenFileNames(0, "Open Data Files", "/home/alexandr/develop/c++/biology", "*");
+    dataList=openDataFiles.getOpenFileNames(0, "", "*");
     qDebug() << "count: " << dataList.count();
 
     if(tables.count()>0)
