@@ -4,21 +4,12 @@ OLS_cos::OLS_cos()
 {
 }
 
-void OLS_cos::freeMatrix()
-{
-   int i;
-   for(i=0; i<DEGREE; i++)
-   {
-       delete[] sums[i];
-   }
-   delete[] constant_terms;
-   delete[] sums;
-}
-
 void OLS_cos::allocateMatrixes()
 {
     solve=new double[DEGREE];
-    constant_terms=new double[DEGREE];
+    constant_terms=new double*[DEGREE];
+    for(int i=0; i<DEGREE; i++)
+        constant_terms[i]=new double[1];
     sums=new double*[DEGREE];
     for(int i=0; i<DEGREE; i++)
     {
@@ -29,7 +20,7 @@ void OLS_cos::allocateMatrixes()
         }
         
         solve[i]=0.0;
-        constant_terms[i]=0.0;
+        constant_terms[i][0]=0.0;
     }
 }
 
@@ -44,38 +35,9 @@ void OLS_cos::fillMatrixes()
 		sums[1][1]+=pow(cos(x[k]), 2.0);
 
 	for(int k=0; k<size; k++)
-		constant_terms[0]+=y[k];
+		constant_terms[0][0]+=y[k];
 	for(int k=0; k<size; k++)
-		constant_terms[1]+=y[k]*cos(x[k]);
-}
-
-void OLS_cos::diagonalChecking()
-{
-   float temp=0;
-   for(int i=0; i<DEGREE; i++)
-   {
-       if(sums[i][i]==0)
-       {
-           for(int j=0; j<DEGREE; j++)
-           {
-               if(j==i)
-                   continue;
-               if(sums[j][i]!=0 && sums[i][j]!=0)
-               {
-                   for(int k=0; k<DEGREE; k++)
-                   {
-                       temp = sums[j][k];
-                       sums[j][k]=sums[i][k];
-                       sums[i][k]=temp;
-                   }
-                   temp=constant_terms[j];
-                   constant_terms[j]=constant_terms[i];
-                   constant_terms[i]=temp;
-                   break;
-               }
-           }
-       }
-   }
+		constant_terms[1][0]+=y[k]*cos(x[k]);
 }
 
 double *OLS_cos::getSolve(double* _x, double* _y, int _size)
@@ -86,41 +48,10 @@ double *OLS_cos::getSolve(double* _x, double* _y, int _size)
     allocateMatrixes();
     fillMatrixes();
 
-/* Gaussian Method, I'm suppose.. */
+    mainElementMethod* m=new mainElementMethod(sums, constant_terms, DEGREE);
+    solve=m->solveSystem();
 
-    diagonalChecking();
-
-    for(int k=0; k<DEGREE; k++)
-    {
-       for(int i=k+1; i<DEGREE; i++)
-       {
-           if(sums[k][k]==0)
-           {
-               qDebug() << "OLS: " << "Error! Solution is not exists!";
-               return NULL;
-           }
-           float M=sums[i][k]/sums[k][k];
-           for(int j=k; j<DEGREE; j++)
-           {
-               sums[i][j]-=M*sums[k][j];
-           }
-           constant_terms[i]-=M*constant_terms[k];
-       }
-    }
-
-   for(int i=DEGREE-1; i>=0; i--)
-   {
-       double s=0.0;
-       for(int j=i; j<DEGREE; j++)
-       {
-			s=s+sums[i][j]*solve[j];
-       }
-       solve[i]=(constant_terms[i]-s)/sums[i][i];
-   }
-
-/* ------------------------------ */
-
-   freeMatrix();
+    delete m;
    
-   return solve;
+    return solve;
 }

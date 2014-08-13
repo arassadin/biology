@@ -14,7 +14,6 @@ public:
 private:
     void allocateMatrixes();
     void fillMatrixes();
-    void freeMatrixes();
     
 private:
     int size;

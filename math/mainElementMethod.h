@@ -1,3 +1,6 @@
+#ifndef MAINELEMENTSMETHOD_H
+#define MAINELEMENTSMETHOD_H
+
 #include<iostream>
 #include<math.h>
 
@@ -25,3 +28,5 @@ private:
 	position findMax(int);
 	position findMax(int, char);
 };
+
+#endif
