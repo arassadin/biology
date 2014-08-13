@@ -210,8 +210,7 @@ void MainWindow::on_nextButton_pressed()
         OLS_polynom* ols_polynom_1=new OLS_polynom(1);
         for(int i=0; i<tables.count(); i++)
         {
-            Koefs* tmpKoefs=new Koefs();
-            tmpKoefs->setType(POLYNOM_1);
+            Koefs* tmpKoefs=new Koefs(polynom_1);
             tmpKoefs->setKoefs(ols_polynom_1->getSolve(tables.at(i)->getX(), tables.at(i)->getY(), tables.at(i)->getSize()));
             qDebug() << tmpKoefs->getKoef(0) << tmpKoefs->getKoef(1);
             step2Koefs.append(tmpKoefs);
@@ -226,8 +225,7 @@ void MainWindow::on_nextButton_pressed()
         OLS_polynom* ols_polynom_2=new OLS_polynom(2);
         for(int i=0; i<tables.count(); i++)
         {
-            Koefs* tmpKoefs=new Koefs();
-            tmpKoefs->setType(POLYNOM_2);
+            Koefs* tmpKoefs=new Koefs(polynom_2);
             tmpKoefs->setKoefs(ols_polynom_2->getSolve(tables.at(i)->getX(), tables.at(i)->getY(), tables.at(i)->getSize()));
             qDebug() << tmpKoefs->getKoef(0) << tmpKoefs->getKoef(1) << tmpKoefs->getKoef(2);
             step2Koefs.append(tmpKoefs);
@@ -242,8 +240,7 @@ void MainWindow::on_nextButton_pressed()
         OLS_polynom* ols_polynom_3=new OLS_polynom(3);
         for(int i=0; i<tables.count(); i++)
         {
-            Koefs* tmpKoefs=new Koefs();
-            tmpKoefs->setType(POLYNOM_3);
+            Koefs* tmpKoefs=new Koefs(polynom_3);
             tmpKoefs->setKoefs(ols_polynom_3->getSolve(tables.at(i)->getX(), tables.at(i)->getY(), tables.at(i)->getSize()));
             qDebug() << tmpKoefs->getKoef(0) << tmpKoefs->getKoef(1) << tmpKoefs->getKoef(2) << tmpKoefs->getKoef(3);
             step2Koefs.append(tmpKoefs);
@@ -409,24 +406,9 @@ void MainWindow::on_nextButton_pressed()
     }
     case 4:
     {
-        int koefQ(0);
-        switch (step2Koefs.at(0)->getType())
-        {
-        case POLYNOM_1:
-            koefQ=2;
-            break;
-        case POLYNOM_2:
-            koefQ=3;
-            break;
-        case POLYNOM_3:
-            koefQ=4;
-            break;
-        default:
-            break;
-        }
-
+        qDebug() << "koefQ: " << step2Koefs.at(0)->getKoefQ() ;
         QVector<double*> aSelection;
-        for(int i=0; i<koefQ; i++)
+        for(int i=0; i<step2Koefs.at(0)->getKoefQ(); i++)
         {
             double* tmpA=new double[timesCount];
             for(int j=0; j<timesCount; j++)
@@ -441,8 +423,7 @@ void MainWindow::on_nextButton_pressed()
         for(int i=0; i<aSelection.count(); i++)
         {
             OLS_sin* ols_sin=new OLS_sin();
-            Koefs* tmpKoefs=new Koefs();
-            tmpKoefs->setType(tmp_SIN);
+            Koefs* tmpKoefs=new Koefs(tmp_sin);
             tmpKoefs->setKoefs(ols_sin->getSolve(t, aSelection.at(i), timesCount));
             step4Koefs.append(tmpKoefs);
         }
@@ -452,17 +433,16 @@ void MainWindow::on_nextButton_pressed()
         for(int i=0; i<aSelection.count(); i++)
         {
             OLS_cos* ols_cos=new OLS_cos();
-            Koefs* tmpKoefs=new Koefs();
-            tmpKoefs->setType(tmp_COS);
+            Koefs* tmpKoefs=new Koefs(tmp_cos);
             tmpKoefs->setKoefs(ols_cos->getSolve(t, aSelection.at(i), timesCount));
             step4Koefs.append(tmpKoefs);
         }
 /* end of OLS for cos */
 
         appr.clear();
-        for(int j=0; j<koefQ*SECOND_OLS_FUNC_Q; j+=koefQ)
+        for(int j=0; j<step2Koefs.at(0)->getKoefQ()*SECOND_OLS_FUNC_Q; j+=step2Koefs.at(0)->getKoefQ())
         {
-            for(int i=0; i<koefQ; i++)
+            for(int i=0; i<step2Koefs.at(0)->getKoefQ(); i++)
                 appr.append(mathStep_4(t, aSelection.at(i), step4Koefs.at(j+i), timesCount));
         }
         qDebug() << "this";
@@ -475,7 +455,7 @@ void MainWindow::on_nextButton_pressed()
         horHeader.append("Оценка");
 
         QStringList vertHeader;
-        for(int i=0; i<2; i++)
+        for(int i=0; i<step2Koefs.at(0)->getKoefQ(); i++)
         {
             vertHeader.append("a "+QString::number(i));
             vertHeader.append("sin");
@@ -483,7 +463,7 @@ void MainWindow::on_nextButton_pressed()
         }
 
         QList<QStandardItem*> column1, column2;
-        for(int i=0; i<2; i++)
+        for(int i=0; i<step2Koefs.at(0)->getKoefQ(); i++)
         {
             QStandardItem *tmpItem=new QStandardItem("");
             column1.append(tmpItem);
@@ -492,7 +472,7 @@ void MainWindow::on_nextButton_pressed()
             {
                 QStandardItem *tmpItem1=new QStandardItem();
                 QStandardItem *tmpItem2;
-                double tmpR2=step4Koefs.at(2*j+i)->getR2();
+                double tmpR2=step4Koefs.at(step2Koefs.at(0)->getKoefQ()*j+i)->getR2();
                 QString tmpStr=QString::number(tmpR2);
                 tmpItem1->setText(tmpStr);
                 column1.append(tmpItem1);
@@ -525,23 +505,23 @@ void MainWindow::on_nextButton_pressed()
     }
     case 5:
     {
-        while(step4Koefs.count()>2)
+        while(step4Koefs.count()>step2Koefs.at(0)->getKoefQ())
         {
             double tmpAv1(0.0), tmpAv2(0.0);
-            for(int i=0; i<2; i++)
+            for(int i=0; i<step2Koefs.at(0)->getKoefQ(); i++)
                 tmpAv1+=step4Koefs.at(i)->getR2();
-            tmpAv1/=2.0;
-            for(int i=2; i<2*2; i++)
+            tmpAv1/=(double)step2Koefs.at(0)->getKoefQ();
+            for(int i=step2Koefs.at(0)->getKoefQ(); i<step2Koefs.at(0)->getKoefQ()*2; i++)
                 tmpAv2+=step4Koefs.at(i)->getR2();
-            tmpAv2/=2.0;
+            tmpAv2/=(double)step2Koefs.at(0)->getKoefQ();
             if(tmpAv1>tmpAv2)
-                for(int i=0; i<2; i++)
+                for(int i=0; i<step2Koefs.at(0)->getKoefQ(); i++)
                 {
-                    step4Koefs.removeAt(2);
-                    appr.removeAt(2);
+                    step4Koefs.removeAt(step2Koefs.at(0)->getKoefQ());
+                    appr.removeAt(step2Koefs.at(0)->getKoefQ());
                 }
             else
-                for(int i=0; i<2; i++)
+                for(int i=0; i<step2Koefs.at(0)->getKoefQ(); i++)
                 {
                     step4Koefs.removeAt(0);
                     appr.removeAt(0);
@@ -565,7 +545,7 @@ void MainWindow::on_nextButton_pressed()
             ;
 
         QVector<double*> aSelection;
-        for(int i=0; i<2; i++)
+        for(int i=0; i<step2Koefs.at(0)->getKoefQ(); i++)
         {
             double* tmpA=new double[timesCount];
             for(int j=0; j<timesCount; j++)
@@ -598,7 +578,7 @@ void MainWindow::on_nextButton_pressed()
 
             plots.at(i)->getPlotWidget()->replot();
         }
-        for(int i=0; i<2; i++)
+        for(int i=0; i<step2Koefs.at(0)->getKoefQ(); i++)
             plots.at(i)->show();
 
         ui->tableView->setVisible(false);

@@ -58,30 +58,12 @@ double* mathStep_2(Data *table, Koefs* koefs)
     switch (koefs->getType())
     {
     case POLYNOM_3:
-        for(int i=0; i<table->getSize(); i++)
-        {
-            double tmp(0.0);
-            for(int k=0; k<=3; k++)
-                tmp+=koefs->getKoef(k)*pow(table->getX(i), k);
-            yAppr[i]=tmp;
-        }
-        break;
-
     case POLYNOM_2:
-        for(int i=0; i<table->getSize(); i++)
-        {
-            double tmp(0.0);
-            for(int k=0; k<=2; k++)
-                tmp+=koefs->getKoef(k)*pow(table->getX(i), k);
-            yAppr[i]=tmp;
-        }
-        break;
-
     case POLYNOM_1:
         for(int i=0; i<table->getSize(); i++)
         {
             double tmp(0.0);
-            for(int k=0; k<=1; k++)
+            for(int k=0; k<koefs->getKoefQ(); k++)
                 tmp+=koefs->getKoef(k)*pow(table->getX(i), k);
             yAppr[i]=tmp;
         }

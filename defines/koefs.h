@@ -6,14 +6,14 @@
 class Koefs
 {
 public:
-    Koefs();
+    Koefs(f_type _type);
     ~Koefs();
 
 public:
     void setR2(double _R2);
     double getR2();
-    void setType(functionType _type);
     functionType getType();
+    int getKoefQ();
     double getKoef(int element);
     void setKoefs(double* _koefs);
     void setAppr(int element, double value);
@@ -23,7 +23,7 @@ private:
     double* koefs;
     double* appr;
     double R2;
-    functionType type;
+    f_type type;
 };
 
 #endif // KOEFS_H
