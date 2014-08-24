@@ -43,7 +43,6 @@ void MainWindow::revertAll()
     tables.clear();
     step2Koefs.clear();
     step4Koefs.clear();
-    appr.clear();
     abscissa.clear();
     ordinate.clear();
 
@@ -102,7 +101,6 @@ void MainWindow::on_menuBar_action_OpenData_triggered()
     QFileDialog openDataFiles;
     dataList.clear();
     dataList=openDataFiles.getOpenFileNames(0, "", "*");
-    qDebug() << "count: " << dataList.count();
 
     if(tables.count()>0)
         tables.clear();
@@ -235,7 +233,7 @@ void MainWindow::on_nextButton_pressed()
         {
             Koefs* tmpKoefs=new Koefs(polynom_1);
             tmpKoefs->setKoefs(ols_polynom_1->getSolve(tables.at(i)->getX(), tables.at(i)->getY(), tables.at(i)->getSize()));
-            qDebug() << tmpKoefs->getKoef(0) << tmpKoefs->getKoef(1);
+//            qDebug() << tmpKoefs->getKoef(0) << tmpKoefs->getKoef(1);
             step2Koefs.append(tmpKoefs);
         }
         delete ols_polynom_1;
@@ -250,7 +248,7 @@ void MainWindow::on_nextButton_pressed()
         {
             Koefs* tmpKoefs=new Koefs(polynom_2);
             tmpKoefs->setKoefs(ols_polynom_2->getSolve(tables.at(i)->getX(), tables.at(i)->getY(), tables.at(i)->getSize()));
-            qDebug() << tmpKoefs->getKoef(0) << tmpKoefs->getKoef(1) << tmpKoefs->getKoef(2);
+//            qDebug() << tmpKoefs->getKoef(0) << tmpKoefs->getKoef(1) << tmpKoefs->getKoef(2);
             step2Koefs.append(tmpKoefs);
         }
         delete ols_polynom_2;
@@ -265,7 +263,7 @@ void MainWindow::on_nextButton_pressed()
         {
             Koefs* tmpKoefs=new Koefs(polynom_3);
             tmpKoefs->setKoefs(ols_polynom_3->getSolve(tables.at(i)->getX(), tables.at(i)->getY(), tables.at(i)->getSize()));
-            qDebug() << tmpKoefs->getKoef(0) << tmpKoefs->getKoef(1) << tmpKoefs->getKoef(2) << tmpKoefs->getKoef(3);
+//            qDebug() << tmpKoefs->getKoef(0) << tmpKoefs->getKoef(1) << tmpKoefs->getKoef(2) << tmpKoefs->getKoef(3);
             step2Koefs.append(tmpKoefs);
         }
         delete ols_polynom_3;
@@ -278,11 +276,10 @@ void MainWindow::on_nextButton_pressed()
 //        mathLog.close();
 //        delete logStream;
 
-        appr.clear();
         for(int j=0; j<timesCount*FIRST_OLS_FUNC_Q; j+=timesCount)
         {
             for(int i=0; i<timesCount; i++)
-                appr.append(mathStep_2(tables.at(i), step2Koefs.at(j+i)));
+                mathStep_2(tables.at(i), step2Koefs.at(j+i));
         }
 
 /* filling the table */
@@ -316,14 +313,18 @@ void MainWindow::on_nextButton_pressed()
                 tmpItem1->setText(tmpStr);
                 column1.append(tmpItem1);
 
-                if(tmpR2>0.9 && tmpR2<=1.0)
+                if(tmpR2==1.0)
+                    tmpItem2=new QStandardItem("функциональная");
+                else if(tmpR2>0.9 && tmpR2<1.0)
                     tmpItem2=new QStandardItem("очень высокая");
                 else if(tmpR2>0.7 && tmpR2<=0.9)
                     tmpItem2=new QStandardItem("высокая");
                 else if(tmpR2>0.5 && tmpR2<=0.7)
-                    tmpItem2=new QStandardItem("заметная");
-                else if(tmpR2>0.0 && tmpR2<=0.5)
-                    tmpItem2=new QStandardItem("незначительная");
+                    tmpItem2=new QStandardItem("значительная");
+                else if(tmpR2>0.3 && tmpR2<=0.5)
+                    tmpItem2=new QStandardItem("умеренная");
+                else if(tmpR2>0.0 && tmpR2<=0.3)
+                    tmpItem2=new QStandardItem("слабая");
                 else
                     tmpItem2=new QStandardItem("error!");
                 column2.append(tmpItem2);
@@ -358,18 +359,13 @@ void MainWindow::on_nextButton_pressed()
                 for(int i=0; i<timesCount; i++)
                 {
                     step2Koefs.removeAt(timesCount);
-                    appr.removeAt(timesCount);
                 }
             else
                 for(int i=0; i<timesCount; i++)
                 {
                     step2Koefs.removeAt(0);
-                    appr.removeAt(0);
                 }
         }
-        for(int i=0; i<timesCount; i++)
-            tables.at(i)->setYAppr(appr.at(i));
-        appr.clear();
 
         QMessageBox* infMessageBox=new QMessageBox("Вид итоговой функции", "", QMessageBox::Information, QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
         switch (step2Koefs.at(0)->getType())
@@ -460,7 +456,6 @@ void MainWindow::on_nextButton_pressed()
     }
     case 4:
     {
-        qDebug() << "koefQ: " << step2Koefs.at(0)->getKoefQ() ;
         QVector<double*> aSelection;
         for(int i=0; i<step2Koefs.at(0)->getKoefQ(); i++)
         {
@@ -503,12 +498,11 @@ void MainWindow::on_nextButton_pressed()
         }
 /* end of OLS for polynom */
 
-        appr.clear();
         for(int j=0; j<step2Koefs.at(0)->getKoefQ()*SECOND_OLS_FUNC_Q; j+=step2Koefs.at(0)->getKoefQ())
         {
             for(int i=0; i<step2Koefs.at(0)->getKoefQ(); i++)
             {
-                appr.append(mathStep_4(t, aSelection.at(i), step4Koefs.at(j+i), timesCount));
+                mathStep_4(t, aSelection.at(i), step4Koefs.at(j+i), timesCount);
             }
         }
 
@@ -537,21 +531,26 @@ void MainWindow::on_nextButton_pressed()
                 QStandardItem *tmpItem1=new QStandardItem();
                 QStandardItem *tmpItem2;
                 double tmpR2=step4Koefs.at(step2Koefs.at(0)->getKoefQ()*j+i)->getR2();
-                qDebug() << "R^2 step4: " << tmpR2;
-                QString tmpStr=QString::number(tmpR2);
-                tmpItem1->setText(tmpStr);
-                column1.append(tmpItem1);
-
-                if(tmpR2>0.9 && tmpR2<=1.0)
-                    tmpItem2=new QStandardItem("очень высокая");
+                qDebug() << tmpR2;
+                if(round(tmpR2)>1.0)
+                    tmpItem2=new QStandardItem("error!");
+                else if(tmpR2>0.0 && tmpR2<=0.3)
+                    tmpItem2=new QStandardItem("слабая");
+                else if(tmpR2>0.3 && tmpR2<=0.5)
+                    tmpItem2=new QStandardItem("умеренная");
+                else if(tmpR2>0.5 && tmpR2<=0.7)
+                    tmpItem2=new QStandardItem("значительная");
                 else if(tmpR2>0.7 && tmpR2<=0.9)
                     tmpItem2=new QStandardItem("высокая");
-                else if(tmpR2>0.5 && tmpR2<=0.7)
-                    tmpItem2=new QStandardItem("заметная");
-                else if(tmpR2>0.0 && tmpR2<=0.5)
-                    tmpItem2=new QStandardItem("незначительная");
+                else if(tmpR2>0.9 && tmpR2<1.0)
+                    tmpItem2=new QStandardItem("очень высокая");
                 else
-                    tmpItem2=new QStandardItem("error!");
+                    tmpItem2=new QStandardItem("функциональная");
+
+                QString tmpStr=QString::number(tmpR2);
+                tmpItem1->setText(tmpStr);
+
+                column1.append(tmpItem1);
                 column2.append(tmpItem2);
             }
         }
@@ -586,16 +585,13 @@ void MainWindow::on_nextButton_pressed()
                 for(int i=0; i<step2Koefs.at(0)->getKoefQ(); i++)
                 {
                     step4Koefs.removeAt(step2Koefs.at(0)->getKoefQ());
-                    appr.removeAt(step2Koefs.at(0)->getKoefQ());
                 }
             else
                 for(int i=0; i<step2Koefs.at(0)->getKoefQ(); i++)
                 {
                     step4Koefs.removeAt(0);
-                    appr.removeAt(0);
                 }
         }
-        qDebug() << "this";
 
         QMessageBox* infMessageBox=new QMessageBox("Вид итоговой функции", "", QMessageBox::Information, QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
         switch (step4Koefs.at(0)->getType())

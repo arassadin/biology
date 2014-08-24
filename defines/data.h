@@ -13,7 +13,6 @@ public:
 private:
     double* x;
     double* y;
-    double* yAppr;
     int size;
     double t;
     double arithemeticMean_x;
@@ -33,13 +32,10 @@ public:
     bool allocate();
     void setX(int element, double value);
     void setY(int element, double value);
-    void setYAppr(double* value);
     double getX(int element);
     double getY(int element);
-    double getYAppr(int element);
     double* getX();
     double* getY();
-    double* getYAppr();
     double getArithemeticMean_x();
     double getArithemeticMean_y();
     double getStandartDeviation_x();

@@ -57,7 +57,6 @@ private:
     QStringList dataList;
     int actualStep;
     QMessageBox* errorMessageBox;
-    QVector<double*> appr;
     QVector<double*> abscissa;
     QVector<double*> ordinate;
     double getMin(double* array, int q);

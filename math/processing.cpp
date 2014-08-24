@@ -52,7 +52,7 @@ void mathStep_1(Data *table)
 //                << table->getConfidenceInterval_y() << table->getAccurance_y();
 }
 
-double* mathStep_2(Data *table, Koefs* koefs)
+void mathStep_2(Data *table, Koefs* koefs)
 {
     double* yAppr=new double[table->getSize()];
     switch (koefs->getType())
@@ -83,10 +83,10 @@ double* mathStep_2(Data *table, Koefs* koefs)
 
 //    qDebug() << "R^2 step2: " << koefs->getR2();
 
-    return yAppr;
+    delete[] yAppr;
 }
 
-double* mathStep_4(double* t, double* a, Koefs* koefs, int count)
+void mathStep_4(double* t, double* a, Koefs* koefs, int count)
 {
     double* aAppr=new double[count];
     switch (koefs->getType())
@@ -135,6 +135,6 @@ double* mathStep_4(double* t, double* a, Koefs* koefs, int count)
     }
     koefs->setR2(pow(tmp1/tmp2, 0.5));
 
-    return aAppr;
+    delete[] aAppr;
 }
 
