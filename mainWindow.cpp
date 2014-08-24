@@ -44,6 +44,8 @@ void MainWindow::revertAll()
     step2Koefs.clear();
     step4Koefs.clear();
     appr.clear();
+    abscissa.clear();
+    ordinate.clear();
 
     if(ui->tableView->model())
     {
@@ -388,6 +390,38 @@ void MainWindow::on_nextButton_pressed()
         while(infMessageBox->exec()==QDialog::Accepted)
             ;
 
+        int* pointsCount=new int[timesCount];
+        for(int k=0; k<timesCount; k++)
+        {
+            pointsCount[k]=(tables.at(k)->getX(tables.at(k)->getSize()-1)-tables.at(k)->getX(0))/STEP;
+
+            double* tmpAbscissa=new double[pointsCount[k]+1];
+            for(int i=0; i<=pointsCount[k]; i++)
+                tmpAbscissa[i]=tables.at(k)->getX(0)+STEP*i;
+            abscissa.append(tmpAbscissa);
+
+            double* tmpOrdinate=new double[pointsCount[k]+1];
+            Koefs* tmpKoef=step2Koefs.at(k);
+            switch (tmpKoef->getType())
+            {
+            case POLYNOM_1:
+            case POLYNOM_2:
+            case POLYNOM_3:
+            {
+                for(int i=0; i<=pointsCount[k]; i++)
+                {
+                    tmpOrdinate[i]=0.0;
+                    for(int dgr=0; dgr<tmpKoef->getKoefQ(); dgr++)
+                        tmpOrdinate[i]+=tmpKoef->getKoef(dgr)*pow(tmpAbscissa[i], dgr);
+                }
+                break;
+            }
+            default:
+                break;
+            }
+            ordinate.append(tmpOrdinate);
+        }
+
         QVector<Plot2D*> plots;
         for(int i=0; i<timesCount; i++)
         {
@@ -396,7 +430,7 @@ void MainWindow::on_nextButton_pressed()
             tmpPlot->setWindowTitle(tmpTitle);
             plots.append(tmpPlot);
             plots.at(i)->getPlotWidget()->addGraph();
-            plots.at(i)->getPlotWidget()->graph(0)->setData(tables.at(i)->getX(), tables.at(i)->getYAppr(), tables.at(i)->getSize());
+            plots.at(i)->getPlotWidget()->graph(0)->setData(abscissa.at(i), ordinate.at(i), pointsCount[i]);
             plots.at(i)->getPlotWidget()->addGraph();
             plots.at(i)->getPlotWidget()->graph(1)->setData(tables.at(i)->getX(), tables.at(i)->getY(), tables.at(i)->getSize());
             QCPScatterStyle tmpStyle(QCPScatterStyle::ssCross, Qt::red, 6.0);
@@ -408,20 +442,19 @@ void MainWindow::on_nextButton_pressed()
             double tmpStep(0.0);
             tmpStep=fabs(tables.at(i)->getX(tables.at(i)->getSize()-1)-tables.at(i)->getX(0))/(double)tables.at(i)->getSize();
             plots.at(i)->getPlotWidget()->xAxis->setRange(tables.at(i)->getX(0)-tmpStep*1.0, tables.at(i)->getX(tables.at(i)->getSize()-1)+tmpStep*1.0);
-//            plots.at(i)->getPlotWidget()->xAxis->setRange(tables.at(i)->getX(0)-1, tables.at(i)->getX(tables.at(i)->getSize()-1)+1);
-            tmpStep=fabs(tables.at(i)->getYAppr(tables.at(i)->getSize()-1)-tables.at(i)->getYAppr(0))/(double)tables.at(i)->getSize();
-            plots.at(i)->getPlotWidget()->yAxis->setRange(tables.at(i)->getYAppr(0)-tmpStep*1.0, tables.at(i)->getYAppr(tables.at(i)->getSize()-1)+tmpStep*1.0);
-//            plots.at(i)->getPlotWidget()->yAxis->setRange(tables.at(i)->getYAppr(0)-1, tables.at(i)->getYAppr(tables.at(i)->getSize()-1)+1);
+            tmpStep=fabs(tables.at(i)->getY(tables.at(i)->getSize()-1)-tables.at(i)->getY(0))/(double)tables.at(i)->getSize();
+            plots.at(i)->getPlotWidget()->yAxis->setRange(getMin(ordinate.at(i), pointsCount[i])-tmpStep*1.0, getMax(ordinate.at(i), pointsCount[i])+tmpStep*1.0);
 
             plots.at(i)->getPlotWidget()->replot();
         }
         for(int i=0; i<timesCount; i++)
             plots.at(i)->show();
 
-        ui->tableView->setVisible(false);
-//        ui->tableView->model()->removeRows(0, ui->tableView->model()->rowCount());
-//        ui->tableView->model()->removeColumns(0, ui->tableView->model()->columnCount());
+        delete[] pointsCount;
+        abscissa.clear();
+        ordinate.clear();
 
+        ui->tableView->setVisible(false);
         actualStep++;
         return;
     }
@@ -470,8 +503,6 @@ void MainWindow::on_nextButton_pressed()
         }
 /* end of OLS for polynom */
 
-        qDebug() << "step4koefs count: " << step4Koefs.count();
-
         appr.clear();
         for(int j=0; j<step2Koefs.at(0)->getKoefQ()*SECOND_OLS_FUNC_Q; j+=step2Koefs.at(0)->getKoefQ())
         {
@@ -506,6 +537,7 @@ void MainWindow::on_nextButton_pressed()
                 QStandardItem *tmpItem1=new QStandardItem();
                 QStandardItem *tmpItem2;
                 double tmpR2=step4Koefs.at(step2Koefs.at(0)->getKoefQ()*j+i)->getR2();
+                qDebug() << "R^2 step4: " << tmpR2;
                 QString tmpStr=QString::number(tmpR2);
                 tmpItem1->setText(tmpStr);
                 column1.append(tmpItem1);
@@ -599,26 +631,26 @@ void MainWindow::on_nextButton_pressed()
             aSelection.append(tmpA);
         }
 
-        int tmpCount=(t[timesCount-1]-t[0])/STEP;
-        double* abscissa=new double[tmpCount+1];
-        for(int i=0; i<=tmpCount; i++)
-            abscissa[i]=t[0]+STEP*i;
-        QVector<double*> ordinate;
-        for(int i=0; i<step4Koefs.count(); i++)
+        int pointsCount=(t[timesCount-1]-t[0])/STEP;
+        double* tmpAbscissa=new double[pointsCount+1];
+        for(int i=0; i<=pointsCount; i++)
+            tmpAbscissa[i]=t[0]+STEP*i;
+        abscissa.append(tmpAbscissa);
+        for(int k=0; k<step4Koefs.count(); k++)
         {
-            double* tmpOrdinate=new double[tmpCount+1];
-            Koefs* tmpKoef=step4Koefs.at(i);
+            double* tmpOrdinate=new double[pointsCount+1];
+            Koefs* tmpKoef=step4Koefs.at(k);
             switch (tmpKoef->getType())
             {
             case POLYNOM_1:
             case POLYNOM_2:
             case POLYNOM_3:
             {
-                for(int i=0; i<=tmpCount; i++)
+                for(int i=0; i<=pointsCount; i++)
                 {
                     tmpOrdinate[i]=0.0;
-                    for(int k=0; k<tmpKoef->getKoefQ(); k++)
-                        tmpOrdinate[i]+=tmpKoef->getKoef(k)*pow(abscissa[i], k);
+                    for(int dgr=0; dgr<tmpKoef->getKoefQ(); dgr++)
+                        tmpOrdinate[i]+=tmpKoef->getKoef(dgr)*pow(abscissa.at(0)[i], dgr);
                 }
                 break;
             }
@@ -636,7 +668,7 @@ void MainWindow::on_nextButton_pressed()
             tmpPlot->setWindowTitle(tmpTitle);
             plots.append(tmpPlot);
             plots.at(i)->getPlotWidget()->addGraph();
-            plots.at(i)->getPlotWidget()->graph(0)->setData(t, appr.at(i), timesCount);
+            plots.at(i)->getPlotWidget()->graph(0)->setData(abscissa.at(0), ordinate.at(i), pointsCount);
             plots.at(i)->getPlotWidget()->addGraph();
             plots.at(i)->getPlotWidget()->graph(1)->setData(t, aSelection.at(i), timesCount);
             QCPScatterStyle tmpStyle(QCPScatterStyle::ssCross, Qt::red, 6.0);
@@ -649,15 +681,18 @@ void MainWindow::on_nextButton_pressed()
             tmpStep=fabs(t[timesCount-1]-t[0])/(double)timesCount;
             plots.at(i)->getPlotWidget()->xAxis->setRange(t[0]-tmpStep*1.0, t[timesCount-1]+tmpStep*1.0);
             tmpStep=fabs(aSelection.at(i)[timesCount-1]-aSelection.at(i)[0])/(double)timesCount;
-            plots.at(i)->getPlotWidget()->yAxis->setRange(getMin(aSelection.at(i), timesCount)-tmpStep*1.0, getMax(aSelection.at(i), timesCount)+tmpStep*1.0);
+            plots.at(i)->getPlotWidget()->yAxis->setRange(getMin(ordinate.at(i), pointsCount)-tmpStep*1.0, getMax(ordinate.at(i), pointsCount)+tmpStep*1.0);
 
             plots.at(i)->getPlotWidget()->replot();
         }
         for(int i=0; i<step2Koefs.at(0)->getKoefQ(); i++)
             plots.at(i)->show();
 
-        ui->tableView->setVisible(false);
+        abscissa.clear();
+        ordinate.clear();
 
+        ui->tableView->setVisible(false);
+        actualStep++;
         return;
     }
     case 6:

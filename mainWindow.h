@@ -58,6 +58,8 @@ private:
     int actualStep;
     QMessageBox* errorMessageBox;
     QVector<double*> appr;
+    QVector<double*> abscissa;
+    QVector<double*> ordinate;
     double getMin(double* array, int q);
     double getMax(double* array, int q);
 

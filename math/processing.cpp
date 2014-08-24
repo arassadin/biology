@@ -76,7 +76,7 @@ double* mathStep_2(Data *table, Koefs* koefs)
     double tmp1(0.0), tmp2(0.0);
     for(int i=0; i<table->getSize(); i++)
     {
-        tmp1+=pow(table->getY(i)-yAppr[i], 2.0);
+        tmp1+=pow(yAppr[i]-table->getArithemeticMean_y(), 2.0);
         tmp2+=pow(table->getY(i)-table->getArithemeticMean_y(), 2.0);
     }
     koefs->setR2(pow(tmp1/tmp2, 0.5));
@@ -99,7 +99,6 @@ double* mathStep_4(double* t, double* a, Koefs* koefs, int count)
             double tmp(0.0);
             for(int k=0; k<koefs->getKoefQ(); k++)
                 tmp+=koefs->getKoef(k)*pow(t[i], k);
-            qDebug() << "a: " << a[i] << "appr: " << tmp;
             aAppr[i]=tmp;
         }
         break;
@@ -131,12 +130,11 @@ double* mathStep_4(double* t, double* a, Koefs* koefs, int count)
     double tmp1(0.0), tmp2(0.0);
     for(int i=0; i<count; i++)
     {
-        tmp1+=pow(a[i]-aAppr[i], 2.0);
+        tmp1+=pow(aAppr[i]-arithemeticMean_a, 2.0);
         tmp2+=pow(a[i]-arithemeticMean_a, 2.0);
     }
     koefs->setR2(pow(tmp1/tmp2, 0.5));
 
-    qDebug() << "R^2 step4: " << koefs->getR2();
     return aAppr;
 }
 
