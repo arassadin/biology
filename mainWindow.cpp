@@ -17,6 +17,24 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+double MainWindow::getMin(double *array, int q)
+{
+    double min=array[0];
+    for(int i=1; i<q; i++)
+        if(array[i]<min)
+            min=array[i];
+    return min;
+}
+
+double MainWindow::getMax(double *array, int q)
+{
+    double max=array[0];
+    for(int i=1; i<q; i++)
+        if(array[i]>max)
+            max=array[i];
+    return max;
+}
+
 void MainWindow::revertAll()
 {
     delete[] t; t=0;
@@ -26,6 +44,12 @@ void MainWindow::revertAll()
     step2Koefs.clear();
     step4Koefs.clear();
     appr.clear();
+
+    if(ui->tableView->model())
+    {
+        ui->tableView->model()->removeColumns(0, ui->tableView->model()->columnCount());
+        ui->tableView->model()->removeRows(0, ui->tableView->model()->rowCount());
+    }
 
     ui->tableView->setVisible(false);
     ui->startButton->setEnabled(false);
@@ -196,9 +220,6 @@ void MainWindow::on_nextButton_pressed()
 
     case 2:
     {
-        ui->tableView->model()->removeRows(0, ui->tableView->model()->rowCount());
-        ui->tableView->model()->removeColumns(0, ui->tableView->model()->columnCount());
-
         if(step2Koefs.count()>0)
             step2Koefs.clear();
 
@@ -420,32 +441,45 @@ void MainWindow::on_nextButton_pressed()
             step4Koefs.clear();
 
 /* OLS for sin */
-        for(int i=0; i<aSelection.count(); i++)
-        {
-            OLS_sin* ols_sin=new OLS_sin();
-            Koefs* tmpKoefs=new Koefs(tmp_sin);
-            tmpKoefs->setKoefs(ols_sin->getSolve(t, aSelection.at(i), timesCount));
-            step4Koefs.append(tmpKoefs);
-        }
+//        for(int i=0; i<aSelection.count(); i++)
+//        {
+//            OLS_sin* ols_sin=new OLS_sin();
+//            Koefs* tmpKoefs=new Koefs(tmp_sin);
+//            tmpKoefs->setKoefs(ols_sin->getSolve(t, aSelection.at(i), timesCount));
+//            step4Koefs.append(tmpKoefs);
+//        }
 /* end of OLS for sin */
 
 /* OLS for cos */
+//        for(int i=0; i<aSelection.count(); i++)
+//        {
+//            OLS_cos* ols_cos=new OLS_cos();
+//            Koefs* tmpKoefs=new Koefs(tmp_cos);
+//            tmpKoefs->setKoefs(ols_cos->getSolve(t, aSelection.at(i), timesCount));
+//            step4Koefs.append(tmpKoefs);
+//        }
+/* end of OLS for cos */
+
+/* OLS for polynom, degree 3 */
         for(int i=0; i<aSelection.count(); i++)
         {
-            OLS_cos* ols_cos=new OLS_cos();
-            Koefs* tmpKoefs=new Koefs(tmp_cos);
-            tmpKoefs->setKoefs(ols_cos->getSolve(t, aSelection.at(i), timesCount));
+            OLS_polynom* ols_polynom_3=new OLS_polynom(3);
+            Koefs* tmpKoefs=new Koefs(polynom_3);
+            tmpKoefs->setKoefs(ols_polynom_3->getSolve(t, aSelection.at(i), timesCount));
             step4Koefs.append(tmpKoefs);
         }
-/* end of OLS for cos */
+/* end of OLS for polynom */
+
+        qDebug() << "step4koefs count: " << step4Koefs.count();
 
         appr.clear();
         for(int j=0; j<step2Koefs.at(0)->getKoefQ()*SECOND_OLS_FUNC_Q; j+=step2Koefs.at(0)->getKoefQ())
         {
             for(int i=0; i<step2Koefs.at(0)->getKoefQ(); i++)
+            {
                 appr.append(mathStep_4(t, aSelection.at(i), step4Koefs.at(j+i), timesCount));
+            }
         }
-        qDebug() << "this";
 
 /* filling the table */
         QStandardItemModel* model=new QStandardItemModel();
@@ -458,8 +492,7 @@ void MainWindow::on_nextButton_pressed()
         for(int i=0; i<step2Koefs.at(0)->getKoefQ(); i++)
         {
             vertHeader.append("a "+QString::number(i));
-            vertHeader.append("sin");
-            vertHeader.append("cos");
+            vertHeader.append("Полиномиальная (степень 3)");
         }
 
         QList<QStandardItem*> column1, column2;
@@ -493,9 +526,12 @@ void MainWindow::on_nextButton_pressed()
         model->appendColumn(column1);
         model->appendColumn(column2);
 
-        ui->tableView->setModel(model);
         model->setHorizontalHeaderLabels(horHeader);
         model->setVerticalHeaderLabels(vertHeader);
+
+        ui->tableView->setModel(model);
+        ui->tableView->resizeRowsToContents();
+        ui->tableView->resizeColumnsToContents();
 /* end of the filling */
 
         ui->tableView->setVisible(true);
@@ -527,6 +563,7 @@ void MainWindow::on_nextButton_pressed()
                     appr.removeAt(0);
                 }
         }
+        qDebug() << "this";
 
         QMessageBox* infMessageBox=new QMessageBox("Вид итоговой функции", "", QMessageBox::Information, QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
         switch (step4Koefs.at(0)->getType())
@@ -536,6 +573,15 @@ void MainWindow::on_nextButton_pressed()
             break;
         case tmp_COS:
             infMessageBox->setText("Выбран cos");
+            break;
+        case POLYNOM_1:
+            infMessageBox->setText("Выбрана полиномиальная функция 1ой степени");
+            break;
+        case POLYNOM_2:
+            infMessageBox->setText("Выбрана полиномиальная функция 2ой степени");
+            break;
+        case POLYNOM_3:
+            infMessageBox->setText("Выбрана полиномиальная функция 3ой степени");
             break;
         default:
             infMessageBox->setText("Каак?Каааак?");
@@ -553,8 +599,37 @@ void MainWindow::on_nextButton_pressed()
             aSelection.append(tmpA);
         }
 
+        int tmpCount=(t[timesCount-1]-t[0])/STEP;
+        double* abscissa=new double[tmpCount+1];
+        for(int i=0; i<=tmpCount; i++)
+            abscissa[i]=t[0]+STEP*i;
+        QVector<double*> ordinate;
+        for(int i=0; i<step4Koefs.count(); i++)
+        {
+            double* tmpOrdinate=new double[tmpCount+1];
+            Koefs* tmpKoef=step4Koefs.at(i);
+            switch (tmpKoef->getType())
+            {
+            case POLYNOM_1:
+            case POLYNOM_2:
+            case POLYNOM_3:
+            {
+                for(int i=0; i<=tmpCount; i++)
+                {
+                    tmpOrdinate[i]=0.0;
+                    for(int k=0; k<tmpKoef->getKoefQ(); k++)
+                        tmpOrdinate[i]+=tmpKoef->getKoef(k)*pow(abscissa[i], k);
+                }
+                break;
+            }
+            default:
+                break;
+            }
+            ordinate.append(tmpOrdinate);
+        }
+
         QVector<Plot2D*> plots;
-        for(int i=0; i<2; i++)
+        for(int i=0; i<step4Koefs.count(); i++)
         {
             Plot2D* tmpPlot=new Plot2D();
             QString tmpTitle="a"+QString::number(i);
@@ -574,7 +649,7 @@ void MainWindow::on_nextButton_pressed()
             tmpStep=fabs(t[timesCount-1]-t[0])/(double)timesCount;
             plots.at(i)->getPlotWidget()->xAxis->setRange(t[0]-tmpStep*1.0, t[timesCount-1]+tmpStep*1.0);
             tmpStep=fabs(aSelection.at(i)[timesCount-1]-aSelection.at(i)[0])/(double)timesCount;
-            plots.at(i)->getPlotWidget()->yAxis->setRange(aSelection.at(i)[0]-tmpStep*1.0, aSelection.at(i)[timesCount-1]+tmpStep*1.0);
+            plots.at(i)->getPlotWidget()->yAxis->setRange(getMin(aSelection.at(i), timesCount)-tmpStep*1.0, getMax(aSelection.at(i), timesCount)+tmpStep*1.0);
 
             plots.at(i)->getPlotWidget()->replot();
         }
@@ -583,10 +658,18 @@ void MainWindow::on_nextButton_pressed()
 
         ui->tableView->setVisible(false);
 
+        return;
+    }
+    case 6:
+    {
+
+
+
         ui->nextButton->setEnabled(false);
         actualStep++;
         return;
     }
+
     default:
         qDebug() << "Next Button: " << "error! step " << actualStep << " is wrong";
         return;
@@ -611,7 +694,6 @@ void MainWindow::keyPressEvent(QKeyEvent* ke)
 
 void MainWindow::testFunction()
 {
-    QString tmp("time = 0.5 ");
-    QStringList tmpList=tmp.split('=');
-    qDebug() << tmpList.at(1).toDouble();
+    for(int i=0; i<timesCount; i++)
+        qDebug() << t[i];
 }

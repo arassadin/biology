@@ -2,7 +2,8 @@
 #define MAINWINDOW_H
 
 #define FIRST_OLS_FUNC_Q 3
-#define SECOND_OLS_FUNC_Q 2
+#define SECOND_OLS_FUNC_Q 1
+#define STEP 0.01
 
 #include<QMainWindow>
 #include<QFileDialog>
@@ -57,6 +58,8 @@ private:
     int actualStep;
     QMessageBox* errorMessageBox;
     QVector<double*> appr;
+    double getMin(double* array, int q);
+    double getMax(double* array, int q);
 
 private:
     Data* readData(QString fileName);
